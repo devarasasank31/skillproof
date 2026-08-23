@@ -57,7 +57,9 @@ public class VerificationService {
         this.events = events;
         this.mailEnabled = mailEnabled;
         this.mailFrom = mailFrom;
-        this.brevoApiKey = brevoApiKey;
+        // Trim guards against invisible whitespace/newlines pasted into the Render env editor,
+        // which otherwise produce a header Brevo rejects as "Key not found".
+        this.brevoApiKey = brevoApiKey == null ? "" : brevoApiKey.trim();
         this.appUrl = appUrl;
     }
 
@@ -84,6 +86,17 @@ public class VerificationService {
     @EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
     public void checkMailSetup() {
         if (!brevoApiKey.isBlank()) {
+            String masked = brevoApiKey.length() > 12
+                    ? brevoApiKey.substring(0, 8) + "..." + brevoApiKey.substring(brevoApiKey.length() - 4)
+                    : brevoApiKey;
+            boolean looksLikeV3Key = brevoApiKey.startsWith("xkeysib-");
+            log.info("MAIL CHECK: testing Brevo key {} (length {}, v3-format={})",
+                    masked, brevoApiKey.length(), looksLikeV3Key);
+            if (!looksLikeV3Key) {
+                log.error("MAIL CHECK: key does NOT start with 'xkeysib-'. You copied the wrong credential. "
+                        + "In Brevo go to SMTP & API -> API Keys (not SMTP keys) -> Generate new key.");
+                return;
+            }
             try {
                 var req = java.net.http.HttpRequest.newBuilder()
                         .uri(java.net.URI.create("https://api.brevo.com/v3/account"))
