@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   BarChart3, Briefcase, Brain, Code2, Github, LayoutDashboard, ListChecks,
-  LogOut, Moon, RefreshCcw, Sun, User as UserIcon, Network,
+  LogOut, Moon, RefreshCcw, Settings as SettingsIcon, Sun, User as UserIcon, Network,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 
@@ -16,6 +16,7 @@ const NAV = [
   { to: '/github', label: 'GitHub', icon: Github },
   { to: '/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/profile', label: 'Profile', icon: UserIcon },
+  { to: '/settings', label: 'Settings', icon: SettingsIcon },
 ]
 
 export function useTheme() {
@@ -82,6 +83,24 @@ export default function Layout() {
             </button>
           </div>
         </header>
+        <nav className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 md:hidden dark:border-slate-800 dark:bg-slate-900">
+          {NAV.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                  isActive
+                    ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400'
+                    : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                }`
+              }
+            >
+              <Icon size={14} />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
         <main className="min-h-0 flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
