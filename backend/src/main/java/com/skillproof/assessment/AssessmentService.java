@@ -51,7 +51,7 @@ public class AssessmentService {
     public record StartedAssessment(Long assessmentId, String source, List<QuestionDto> questions) {}
     public record AnswerRequest(Long questionId, String answerText) {}
     public record AnswerResult(int score, Boolean correct, String evaluationSource, String feedback,
-                               List<String> missingConcepts) {}
+                               List<String> missingConcepts, String answerKey, String explanation) {}
     public record CompletedResult(Long assessmentId, int score, int answered, int total) {}
 
     @Transactional
@@ -61,7 +61,7 @@ public class AssessmentService {
         Skill skill = us.getSkill();
 
         String difficulty = req.difficulty() == null ? "MEDIUM" : req.difficulty().toUpperCase();
-        int count = req.count() == null ? 4 : Math.max(1, Math.min(8, req.count()));
+        int count = req.count() == null ? 5 : Math.max(1, Math.min(15, req.count()));
 
         Assessment assessment = new Assessment();
         assessment.setUser(us.getUser());
@@ -165,7 +165,9 @@ public class AssessmentService {
         a.setMissingConcepts(r.missingConcepts().isEmpty() ? null : String.join(",", r.missingConcepts()));
         answers.save(a);
 
-        return new AnswerResult(r.score(), r.correct(), r.source(), r.feedback(), r.missingConcepts());
+        // Reveal the correct answer + explanation so the user learns from every attempt.
+        return new AnswerResult(r.score(), r.correct(), r.source(), r.feedback(), r.missingConcepts(),
+                q.getAnswerKey(), q.getExplanation());
     }
 
     @Transactional

@@ -34,12 +34,13 @@ export default function SkillDetail() {
   const [results, setResults] = useState<Record<number, AnswerResult>>({})
   const [submitting, setSubmitting] = useState(false)
   const [completed, setCompleted] = useState<CompletedResult | null>(null)
+  const [count, setCount] = useState(5)
 
   const start = useMutation({
     mutationFn: (source?: 'MCQ' | 'MIXED') =>
       api<StartedAssessment>(`/skills/${id}/assess`, {
         method: 'POST',
-        body: JSON.stringify(source ? { source } : {}),
+        body: JSON.stringify({ count, ...(source ? { source } : {}) }),
       }),
     onSuccess: (data) => {
       setAssessmentId(data.assessmentId)
@@ -144,7 +145,17 @@ export default function SkillDetail() {
           )}
 
           <Card title="Calibrate this skill" action={
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <select
+                className="input !w-auto !px-2 !py-1.5 text-xs"
+                value={count}
+                onChange={(e) => setCount(Number(e.target.value))}
+                title="How many questions to attempt"
+              >
+                {[3, 5, 8, 10, 15].map((n) => (
+                  <option key={n} value={n}>{n} questions</option>
+                ))}
+              </select>
               <button className="btn-primary !px-3 !py-1.5 text-xs" onClick={() => start.mutate('MCQ')} disabled={start.isPending}>
                 {start.isPending ? 'Starting…' : 'Start assessment'}
               </button>
@@ -175,24 +186,31 @@ export default function SkillDetail() {
 
                       {question.options && question.options.length > 0 ? (
                         <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                          {question.options.map((opt, oi) => (
-                            <button
-                              key={oi}
-                              disabled={!!r}
-                              onClick={() => setAnswers((a) => ({ ...a, [question.id]: opt }))}
-                              className={`rounded-lg border px-3 py-2 text-left text-sm transition ${
-                                r
-                                  ? r.correct === false && answers[question.id] === opt
-                                    ? 'border-red-300 bg-red-50 dark:bg-red-500/10'
-                                    : 'border-slate-200 opacity-70 dark:border-slate-800'
-                                  : answers[question.id] === opt
-                                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
-                                    : 'border-slate-200 hover:border-indigo-300 dark:border-slate-700'
-                              }`}
-                            >
-                              {opt}
-                            </button>
-                          ))}
+                          {question.options.map((opt, oi) => {
+                            const isPicked = answers[question.id] === opt
+                            const isCorrect = r?.answerKey != null && r.answerKey === opt
+                            return (
+                              <button
+                                key={oi}
+                                disabled={!!r}
+                                onClick={() => setAnswers((a) => ({ ...a, [question.id]: opt }))}
+                                className={`rounded-lg border px-3 py-2 text-left text-sm transition ${
+                                  r
+                                    ? isCorrect
+                                      ? 'border-emerald-400 bg-emerald-50 font-medium dark:bg-emerald-500/10'
+                                      : isPicked
+                                        ? 'border-red-300 bg-red-50 dark:bg-red-500/10'
+                                        : 'border-slate-200 opacity-70 dark:border-slate-800'
+                                    : isPicked
+                                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
+                                      : 'border-slate-200 hover:border-indigo-300 dark:border-slate-700'
+                                }`}
+                              >
+                                {opt}
+                                {r && isCorrect && <span className="ml-2 text-xs font-semibold text-emerald-600">✓ correct</span>}
+                              </button>
+                            )
+                          })}
                         </div>
                       ) : (
                         <textarea
@@ -205,10 +223,22 @@ export default function SkillDetail() {
                       )}
 
                       {r && (
-                        <div className="mt-3 space-y-1 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800/60">
+                        <div className="mt-3 space-y-1.5 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800/60">
+                          {r.answerKey && question.type === 'MCQ' && (
+                            <p className="font-medium text-emerald-700 dark:text-emerald-400">
+                              Correct answer: {r.answerKey}
+                            </p>
+                          )}
+                          {r.explanation && (
+                            <p className="text-slate-600 dark:text-slate-300">
+                              <span className="font-medium">Why:</span> {r.explanation}
+                            </p>
+                          )}
                           <p>{r.feedback}</p>
                           {r.missingConcepts.length > 0 && (
-                            <p className="text-xs text-amber-600">Missing concepts: {r.missingConcepts.join(', ')}</p>
+                            <p className="text-xs text-amber-600">
+                              To improve, cover these concepts: {r.missingConcepts.join(', ')}
+                            </p>
                           )}
                         </div>
                       )}
