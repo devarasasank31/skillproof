@@ -96,9 +96,53 @@ skillproof/
 └── .env.example
 ```
 
+## AI: bring your own key (BYOK)
+
+SkillProof runs fully without any AI key — assessments use the built-in question
+bank and a deterministic keyword grader. Add your own API key to unlock:
+
+- **AI grading** of open-ended interview/assessment answers (holistic score + feedback)
+- **Auto-generated questions for ANY skill** — claim anything ("AWS Lambda",
+  "Solidity", …) and if no bank content exists, questions are generated with your
+  key and cached in the DB, so each skill costs one generation ever.
+
+Supported providers (any OpenAI-compatible endpoint): **OpenAI · Groq · OpenRouter ·
+Ollama (local, free) · Custom base URL**. Keys are stored AES-GCM encrypted, shown
+back only masked (`****abcd`), and calls go directly to your provider — SkillProof
+never proxies usage to its own account. Configure at signup or in **Settings → AI key**.
+
+## Deploying for free (Neon + Render + Vercel)
+
+Architecture: `Vercel (SPA) → Render (Spring Boot in Docker) → Neon (Postgres)`.
+
+1. **Database — [neon.tech](https://neon.tech)** (free Postgres):
+   create a project, copy the connection string.
+2. **Backend — [render.com](https://render.com)** → New Web Service → pick this repo:
+   - Root Directory: `backend` (uses `backend/Dockerfile`)
+   - Instance type: Free
+   - Env vars:
+
+     | Key | Value |
+     |---|---|
+     | `DATABASE_URL` | `jdbc:postgresql://<neon-host>/<db>?sslmode=require` |
+     | `DATABASE_USERNAME` / `DATABASE_PASSWORD` | from the Neon string |
+     | `JWT_SECRET` | long random string (60+ chars) |
+     | `FRONTEND_URL` | your Vercel URL (set after step 3) |
+
+   First deploy runs Flyway migrations automatically.
+3. **Frontend — [vercel.com](https://vercel.com)** → import this repo:
+   - Root Directory: `frontend`
+   - Env var: `VITE_API_URL` = `https://<your-service>.onrender.com` (no trailing slash)
+4. Back in Render, set `FRONTEND_URL` = `https://<your-app>.vercel.app` and redeploy
+   (this is what unlocks browser CORS).
+
+> Free-tier note: Render sleeps after ~15 min idle; first request takes ~60 s to wake.
+
 ## Security notes
 
 - Passwords hashed with bcrypt; JWT access tokens (30 min) + rotating refresh tokens (14 days)
 - All endpoints authenticated except `/api/auth/**` and Swagger
+- BYOK AI keys encrypted at rest (AES-GCM, key derived from `JWT_SECRET`); never returned in full
+- CORS: localhost dev origins by default; lock to your domain via `FRONTEND_URL` in production
 - Global `ExceptionHandler` returns `{timestamp, status, code, message, path}`
 - Rate limiting on challenge submissions and GitHub analysis
