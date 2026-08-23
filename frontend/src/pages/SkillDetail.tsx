@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import {
@@ -55,20 +55,36 @@ export default function SkillDetail() {
     if (!assessmentId) return
     setSubmitting(true)
     try {
-      for (const question of questions) {
-        const text = answers[question.id]
-        if (!text) continue
-        const r = await api<AnswerResult>(`/assessments/${assessmentId}/answers`, {
-          method: 'POST',
-          body: JSON.stringify({ questionId: question.id, answerText: text }),
-        })
-        setResults((prev) => ({ ...prev, [question.id]: r }))
-      }
       const done = await api<CompletedResult>(`/assessments/${assessmentId}/complete`, { method: 'POST' })
       setCompleted(done)
       qc.invalidateQueries()
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const qRefs = useRef<Record<number, HTMLDivElement | null>>({})
+  const [savingOne, setSavingOne] = useState<number | null>(null)
+
+  // Save & Next: grade this single question, reveal the answer instantly, jump to the next one.
+  async function saveAndNext(question: AssessmentQuestion) {
+    if (!assessmentId) return
+    const text = answers[question.id]
+    if (!text?.trim() || results[question.id]) return
+    setSavingOne(question.id)
+    try {
+      const r = await api<AnswerResult>(`/assessments/${assessmentId}/answers`, {
+        method: 'POST',
+        body: JSON.stringify({ questionId: question.id, answerText: text }),
+      })
+      setResults((prev) => ({ ...prev, [question.id]: r }))
+      const idx = questions.findIndex((qq) => qq.id === question.id)
+      const next = questions.slice(idx + 1).find((qq) => !results[qq.id])
+      if (next) {
+        setTimeout(() => qRefs.current[next.id]?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 150)
+      }
+    } finally {
+      setSavingOne(null)
     }
   }
 
@@ -171,8 +187,13 @@ export default function SkillDetail() {
               <div className="space-y-4">
                 {questions.map((question, idx) => {
                   const r = results[question.id]
+                  const answeredElsewhere = !!r
                   return (
-                    <div key={question.id} className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
+                    <div
+                      key={question.id}
+                      ref={(el) => { qRefs.current[question.id] = el }}
+                      className="rounded-lg border border-slate-200 p-4 dark:border-slate-800"
+                    >
                       <div className="mb-2 flex items-center justify-between text-xs text-slate-400">
                         <span>Q{idx + 1} · {question.difficulty} · {question.type}</span>
                         {r && (
@@ -188,11 +209,11 @@ export default function SkillDetail() {
                         <div className="mt-3 grid gap-2 sm:grid-cols-2">
                           {question.options.map((opt, oi) => {
                             const isPicked = answers[question.id] === opt
-                            const isCorrect = r?.answerKey != null && r.answerKey === opt
+                            const isCorrect = r?.answerKey != null && r.answerKey === opt && question.type === 'MCQ'
                             return (
                               <button
                                 key={oi}
-                                disabled={!!r}
+                                disabled={answeredElsewhere}
                                 onClick={() => setAnswers((a) => ({ ...a, [question.id]: opt }))}
                                 className={`rounded-lg border px-3 py-2 text-left text-sm transition ${
                                   r
@@ -216,10 +237,23 @@ export default function SkillDetail() {
                         <textarea
                           className="input mt-3 min-h-[90px]"
                           placeholder="Type your answer…"
-                          disabled={!!r}
+                          disabled={answeredElsewhere}
                           value={answers[question.id] || ''}
                           onChange={(e) => setAnswers((a) => ({ ...a, [question.id]: e.target.value }))}
                         />
+                      )}
+
+                      {!r && question.options?.length ? null : null}
+
+                      {/* Save & Next for open questions (MCQs reveal on pick via save button too) */}
+                      {!r && (
+                        <button
+                          className="btn-primary mt-3 !px-3 !py-1.5 text-xs"
+                          disabled={!answers[question.id]?.trim() || savingOne !== null}
+                          onClick={() => saveAndNext(question)}
+                        >
+                          {savingOne === question.id ? 'Checking…' : 'Save & next'}
+                        </button>
                       )}
 
                       {r && (
@@ -229,16 +263,27 @@ export default function SkillDetail() {
                               Correct answer: {r.answerKey}
                             </p>
                           )}
+                          {r.answerKey && question.type !== 'MCQ' && (
+                            <p className="text-emerald-700 dark:text-emerald-400">{r.answerKey}</p>
+                          )}
                           {r.explanation && (
                             <p className="text-slate-600 dark:text-slate-300">
                               <span className="font-medium">Why:</span> {r.explanation}
                             </p>
                           )}
                           <p>{r.feedback}</p>
-                          {r.missingConcepts.length > 0 && (
-                            <p className="text-xs text-amber-600">
-                              To improve, cover these concepts: {r.missingConcepts.join(', ')}
-                            </p>
+                          {(r.keyConcepts?.length ?? 0) > 0 && (
+                            <div className="flex flex-wrap gap-1 pt-1">
+                              {r.keyConcepts!.map((kc) => (
+                                <span key={kc} className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${
+                                  r.missingConcepts.includes(kc)
+                                    ? 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400'
+                                    : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
+                                }`}>
+                                  {kc}
+                                </span>
+                              ))}
+                            </div>
                           )}
                         </div>
                       )}
@@ -248,10 +293,10 @@ export default function SkillDetail() {
                 {!completed && (
                   <button
                     className="btn-primary"
-                    disabled={submitting || Object.keys(answers).length === 0}
+                    disabled={submitting || Object.keys(results).length === 0}
                     onClick={submitAll}
                   >
-                    {submitting ? 'Scoring…' : `Submit ${Object.keys(answers).length}/${questions.length} answered`}
+                    {submitting ? 'Finishing…' : `Finish assessment (${Object.keys(results).length}/${questions.length} answered)`}
                   </button>
                 )}
               </div>

@@ -51,7 +51,8 @@ public class AssessmentService {
     public record StartedAssessment(Long assessmentId, String source, List<QuestionDto> questions) {}
     public record AnswerRequest(Long questionId, String answerText) {}
     public record AnswerResult(int score, Boolean correct, String evaluationSource, String feedback,
-                               List<String> missingConcepts, String answerKey, String explanation) {}
+                               List<String> missingConcepts, List<String> keyConcepts,
+                               String answerKey, String explanation) {}
     public record CompletedResult(Long assessmentId, int score, int answered, int total) {}
 
     @Transactional
@@ -165,9 +166,16 @@ public class AssessmentService {
         a.setMissingConcepts(r.missingConcepts().isEmpty() ? null : String.join(",", r.missingConcepts()));
         answers.save(a);
 
-        // Reveal the correct answer + explanation so the user learns from every attempt.
+        // Always give the user something to learn from: the literal answer when we have one,
+        // otherwise a reference answer built from the expected key concepts.
+        List<String> keyConcepts = q.getKeywords() == null || q.getKeywords().isBlank()
+                ? List.of() : List.of(q.getKeywords().split(","));
+        String reveal = (q.getAnswerKey() == null || q.getAnswerKey().isBlank())
+                ? (keyConcepts.isEmpty() ? null : "A strong answer covers: " + String.join("; ", keyConcepts) + ".")
+                : q.getAnswerKey();
+
         return new AnswerResult(r.score(), r.correct(), r.source(), r.feedback(), r.missingConcepts(),
-                q.getAnswerKey(), q.getExplanation());
+                keyConcepts, reveal, q.getExplanation());
     }
 
     @Transactional

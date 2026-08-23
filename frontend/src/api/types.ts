@@ -109,6 +109,7 @@ export interface AnswerResult {
   evaluationSource: string
   feedback: string
   missingConcepts: string[]
+  keyConcepts?: string[]
   answerKey?: string | null
   explanation?: string | null
 }
