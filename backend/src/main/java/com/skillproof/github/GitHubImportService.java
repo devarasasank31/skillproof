@@ -72,7 +72,7 @@ public class GitHubImportService {
         if (!rateLimiter.tryAcquire("gh:" + userId, 10, Duration.ofHours(1).toMillis())) {
             throw ApiException.tooMany("GitHub analysis limit reached (10/hour). Try later.");
         }
-        String username = usernameRaw == null ? "" : usernameRaw.trim();
+        String username = normalizeUsername(usernameRaw);
         if (username.isEmpty() || !username.matches("[A-Za-z0-9-]{1,39}")) {
             throw ApiException.badRequest("VALIDATION_ERROR", "Invalid GitHub username");
         }
@@ -153,6 +153,21 @@ public class GitHubImportService {
 
         recalculation.recalculateUser(userId);
         return new AnalyzeResult(username, ghRepos.size(), rows, mapped);
+    }
+
+    /**
+     * Accepts bare usernames ("devarasasank31"), @handles ("@user"),
+     * and full profile URLs ("https://github.com/user", "github.com/user/").
+     */
+    static String normalizeUsername(String raw) {
+        String s = raw == null ? "" : raw.trim();
+        if (s.isEmpty()) return "";
+        var urlMatcher = java.util.regex.Pattern
+                .compile("(?i)^(?:https?://)?(?:www\\.)?github\\.com/([A-Za-z0-9-]{1,39})/?$")
+                .matcher(s);
+        if (urlMatcher.find()) return urlMatcher.group(1);
+        if (s.startsWith("@")) s = s.substring(1);
+        return s.trim();
     }
 
     private void touchActivity(Long userId, Set<String> techs, Instant pushedAt, String repoName) {

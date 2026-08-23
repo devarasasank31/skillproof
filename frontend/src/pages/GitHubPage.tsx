@@ -29,7 +29,7 @@ export default function GitHubPage() {
         >
           <input
             className="input flex-1"
-            placeholder="GitHub username…"
+            placeholder="GitHub username or profile URL…"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
