@@ -1,12 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { api, clearTokens, getAccess, setAuthFailureHandler, setTokens } from '../api/client'
-import type { AiSetup, AuthTokens, Profile } from '../api/types'
+import type { AiSetup, AuthTokens, Profile, RegisterResponse } from '../api/types'
 
 interface AuthContextValue {
   user: Profile | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
-  register: (name: string, email: string, password: string, ai?: AiSetup) => Promise<void>
+  register: (name: string, email: string, password: string, ai?: AiSetup) => Promise<RegisterResponse>
   logout: () => void
   refreshUser: () => Promise<void>
 }
@@ -51,13 +51,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [loadProfile])
 
   const register = useCallback(async (name: string, email: string, password: string, ai?: AiSetup) => {
-    const t = await api<AuthTokens>('/auth/register', {
+    const r = await api<RegisterResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ name, email, password, ai: ai && ai.provider ? ai : null }),
     })
-    setTokens(t.accessToken, t.refreshToken)
-    await loadProfile()
-  }, [loadProfile])
+    return r
+  }, [])
 
   const logout = useCallback(async () => {
     try {

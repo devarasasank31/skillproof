@@ -43,6 +43,9 @@ public class User {
     @Column(name = "ai_model", length = 100)
     private String aiModel;
 
+    @Column(name = "email_verified_at")
+    private Instant emailVerifiedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
@@ -78,6 +81,8 @@ public class User {
     public void setAiBaseUrl(String aiBaseUrl) { this.aiBaseUrl = aiBaseUrl; }
     public String getAiModel() { return aiModel; }
     public void setAiModel(String aiModel) { this.aiModel = aiModel; }
+    public Instant getEmailVerifiedAt() { return emailVerifiedAt; }
+    public void setEmailVerifiedAt(Instant emailVerifiedAt) { this.emailVerifiedAt = emailVerifiedAt; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }

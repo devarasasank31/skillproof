@@ -13,17 +13,34 @@ public class AuthController {
 
     record LoginRequest(@NotBlank @Email String email, @NotBlank String password) {}
     record RefreshRequest(@NotBlank String refreshToken) {}
+    record VerifyRequest(@NotBlank String token) {}
+    record ResendRequest(@NotBlank @Email String email) {}
 
     private final AuthService authService;
+    private final VerificationService verificationService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, VerificationService verificationService) {
         this.authService = authService;
+        this.verificationService = verificationService;
     }
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public AuthResponse register(@jakarta.validation.Valid @RequestBody RegisterRequest request) {
+    public RegisterResponse register(@jakarta.validation.Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
+    }
+
+    @PostMapping("/verify")
+    public java.util.Map<String, String> verify(@jakarta.validation.Valid @RequestBody VerifyRequest body) {
+        verificationService.confirm(body.token());
+        return java.util.Map.of("message", "Email verified. You can now sign in.");
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Void> resend(@jakarta.validation.Valid @RequestBody ResendRequest body,
+                                       HttpServletRequest http) {
+        verificationService.resend(clientIp(http), body.email());
+        return ResponseEntity.accepted().build();
     }
 
     @PostMapping("/login")

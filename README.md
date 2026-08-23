@@ -133,10 +133,24 @@ Architecture: `Vercel (SPA) → Render (Spring Boot in Docker) → Neon (Postgre
    | `DATABASE_USERNAME` / `DATABASE_PASSWORD` | from Neon string |
    | `JWT_SECRET` | 60+ random chars |
    | `FRONTEND_URL` | your Vercel URL (set after step 3) |
+   | `APP_URL` | your Vercel URL (used in verification links) |
 
 3. **Frontend — [vercel.com](https://vercel.com)**: import repo → Root Directory `frontend` →
    env var `VITE_API_URL` = `https://<your-service>.onrender.com` → **Redeploy** (required!).
-4. Back in Render set `FRONTEND_URL` = `https://<your-app>.vercel.app` → redeploy (unlocks CORS).
+
+4. **Email verification** — new accounts must confirm their address before signing in.
+   Enable sending via any SMTP provider, e.g. Gmail: create an
+   [App Password](https://myaccount.google.com/apppasswords) (2FA required), then set:
+
+   | Key | Value |
+   |---|---|
+   | `MAIL_ENABLED` | `true` |
+   | `MAIL_USERNAME` | `you@gmail.com` |
+   | `MAIL_PASSWORD` | your 16-char app password |
+   | `MAIL_FROM` | `SkillProof <you@gmail.com>` |
+
+   Without these the app still works — verification links are logged to the Render console instead of emailed.
+5. Back in Render set `FRONTEND_URL` = `https://<your-app>.vercel.app` → redeploy (unlocks CORS).
 
 > Free-tier note: Render sleeps after ~15 min idle; first request takes ~60 s to wake.
 
@@ -151,6 +165,7 @@ cd frontend && npm run build     # type-checks + builds
 
 ## 🔐 Security Notes
 
+- Email verification required before first sign-in (hashed single-use token, 24 h expiry)
 - bcrypt password hashing; JWT access tokens (30 min) + rotating refresh tokens (14 days)
 - All endpoints authenticated except `/api/auth/**` and Swagger
 - BYOK keys encrypted at rest (AES-GCM, derived from `JWT_SECRET`); never returned in full

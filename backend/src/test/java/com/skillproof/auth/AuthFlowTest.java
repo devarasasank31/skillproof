@@ -40,6 +40,9 @@ class AuthFlowTest {
     @Autowired UserRepository users;
     @Autowired PasswordEncoder encoder;
 
+    @Autowired
+    private VerificationTokenRepository tokens;
+
     @BeforeEach
     void seedUser() {
         if (!users.existsByEmailIgnoreCaseAndDeletedFalse("t@example.com")) {
@@ -47,35 +50,58 @@ class AuthFlowTest {
             u.setEmail("t@example.com");
             u.setName("Tester");
             u.setPasswordHash(encoder.encode("Password1!"));
+            u.setEmailVerifiedAt(java.time.Instant.now());
             users.save(u);
         }
     }
 
+    private String sha256(String value) throws Exception {
+        byte[] digest = java.security.MessageDigest.getInstance("SHA-256")
+                .digest(value.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        return java.util.HexFormat.of().formatHex(digest);
+    }
+
     @Test
-    void registerLoginRefreshWork() throws Exception {
+    void registerRequiresEmailVerificationBeforeLogin() throws Exception {
         mvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(new RegisterRequest("New", "n@example.com", "Password1!", null))))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.accessToken").isNotEmpty());
+                .andExpect(jsonPath("$.needsVerification").value(true));
 
-        String body = mvc.perform(post("/api/auth/login")
+        mvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(
-                                java.util.Map.of("email", "t@example.com", "password", "Password1!"))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.refreshToken").isNotEmpty())
-                .andReturn().getResponse().getContentAsString();
+                                java.util.Map.of("email", "n@example.com", "password", "Password1!"))))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("EMAIL_NOT_VERIFIED"));
 
-        var tree = json.readTree(body);
-        assertTrue(tree.get("accessToken").asText().length() > 20);
-
-        mvc.perform(post("/api/auth/refresh")
+        // Invalid link rejected.
+        mvc.perform(post("/api/auth/verify")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(json.writeValueAsString(java.util.Map.of(
-                                "refreshToken", tree.get("refreshToken").asText()))))
+                        .content(json.writeValueAsString(java.util.Map.of("token", "bogus"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_TOKEN"));
+
+        // Confirm with a real token.
+        User unverified = users.findByEmailIgnoreCaseAndDeletedFalse("n@example.com").orElseThrow();
+        VerificationToken vt = new VerificationToken();
+        vt.setUser(unverified);
+        vt.setTokenHash(sha256("raw-test-token"));
+        vt.setExpiresAt(java.time.Instant.now().plusSeconds(3600));
+        tokens.save(vt);
+
+        mvc.perform(post("/api/auth/verify")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(java.util.Map.of("token", "raw-test-token"))))
+                .andExpect(status().isOk());
+
+        mvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(
+                                java.util.Map.of("email", "n@example.com", "password", "Password1!"))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").exists());
+                .andExpect(jsonPath("$.accessToken").isNotEmpty());
     }
 
     @Test

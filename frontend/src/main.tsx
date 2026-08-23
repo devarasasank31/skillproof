@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from './hooks/useAuth'
 import Layout from './components/Layout'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import Verify from './pages/Verify'
 import Dashboard from './pages/Dashboard'
 import Skills from './pages/Skills'
 import SkillDetail from './pages/SkillDetail'
@@ -46,6 +47,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Routes>
             <Route path="/login" element={<PublicOnly><Login /></PublicOnly>} />
             <Route path="/register" element={<PublicOnly><Register /></PublicOnly>} />
+            <Route path="/verify" element={<Verify />} />
             <Route element={<Protected><Layout /></Protected>}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/skills" element={<Skills />} />

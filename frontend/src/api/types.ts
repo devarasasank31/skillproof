@@ -7,6 +7,11 @@ export interface AuthTokens {
   refreshToken: string
 }
 
+export interface RegisterResponse {
+  needsVerification: boolean
+  message: string
+}
+
 export interface AiStatus {
   provider: string | null
   maskedKey: string | null

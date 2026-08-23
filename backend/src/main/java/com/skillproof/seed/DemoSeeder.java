@@ -90,6 +90,7 @@ public class DemoSeeder implements ApplicationRunner {
         demo.setHeadline("Backend Software Engineer");
         demo.setBio("Demo profile with realistic history: strong Java/Spring, decaying AWS, an overclaimed Kafka.");
         demo.setPasswordHash(encoder.encode(DEMO_PASSWORD));
+        demo.setEmailVerifiedAt(Instant.now());
         users.save(demo);
 
         Instant now = Instant.now();

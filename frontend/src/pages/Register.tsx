@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { KeyRound, ChevronDown } from 'lucide-react'
+import { KeyRound, ChevronDown, MailCheck } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import type { AiSetup } from '../api/types'
 import { ErrorBanner } from '../components/ui'
@@ -26,6 +26,7 @@ export default function Register() {
   const [model, setModel] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [sentTo, setSentTo] = useState<string | null>(null)
 
   const preset = PROVIDERS.find((p) => p.value === provider)
 
@@ -47,11 +48,29 @@ export default function Register() {
         ? { provider, apiKey: apiKey || null, baseUrl: baseUrl || null, model: model || null }
         : undefined
       await register(name, email, password, ai)
+      setSentTo(email)
     } catch (err: any) {
       setError(err.message || 'Registration failed')
     } finally {
       setBusy(false)
     }
+  }
+
+  if (sentTo) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-6">
+        <div className="card w-full max-w-sm space-y-4 text-center">
+          <MailCheck size={40} className="mx-auto text-indigo-500" />
+          <h1 className="text-xl font-bold">Check your inbox</h1>
+          <p className="text-sm text-slate-500">
+            We sent a verification link to <span className="font-medium text-slate-700 dark:text-slate-200">{sentTo}</span>.
+            Click it to activate your account, then sign in.
+          </p>
+          <p className="text-xs text-slate-400">The link expires in 24 hours.</p>
+          <Link className="btn-primary block w-full" to="/login">Go to sign in</Link>
+        </div>
+      </div>
+    )
   }
 
   return (

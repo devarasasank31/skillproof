@@ -23,18 +23,21 @@ public class AuthService {
     private final JwtService jwtService;
     private final RateLimiter rateLimiter;
     private final AiSettingsService aiSettings;
+    private final VerificationService verification;
 
     public AuthService(UserRepository users, PasswordEncoder encoder, JwtService jwtService,
-                       RateLimiter rateLimiter, AiSettingsService aiSettings) {
+                       RateLimiter rateLimiter, AiSettingsService aiSettings,
+                       VerificationService verification) {
         this.users = users;
         this.encoder = encoder;
         this.jwtService = jwtService;
         this.rateLimiter = rateLimiter;
         this.aiSettings = aiSettings;
+        this.verification = verification;
     }
 
     @Transactional
-    public AuthResponse register(RegisterRequest req) {
+    public RegisterResponse register(RegisterRequest req) {
         if (users.existsByEmailIgnoreCaseAndDeletedFalse(req.email())) {
             throw ApiException.conflict("EMAIL_TAKEN", "An account with this email already exists");
         }
@@ -48,7 +51,9 @@ public class AuthService {
                     req.ai().provider(), req.ai().apiKey(), req.ai().baseUrl(), req.ai().model()));
         }
         users.save(user);
-        return tokens(user);
+        verification.sendLink(user);
+        return new RegisterResponse(true,
+                "Account created. Check " + user.getEmail() + " for a verification link.");
     }
 
     public AuthResponse login(String email, String password) {
@@ -56,6 +61,10 @@ public class AuthService {
                 .orElseThrow(() -> new ApiException(401, "INVALID_CREDENTIALS", "Invalid email or password"));
         boolean ok = encoder.matches(password, user.getPasswordHash());
         if (!ok) throw new ApiException(401, "INVALID_CREDENTIALS", "Invalid email or password");
+        if (user.getEmailVerifiedAt() == null) {
+            throw new ApiException(403, "EMAIL_NOT_VERIFIED",
+                    "Please verify your email first - check your inbox for the verification link.");
+        }
         return tokens(user);
     }
 
