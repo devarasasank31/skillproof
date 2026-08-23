@@ -104,4 +104,38 @@ public class AiEvaluationService {
             return List.of();
         }
     }
+
+    private static final String EXTRACT_SYSTEM = """
+            You extract skills from resumes. Read the ENTIRE resume - the skills section AND every
+            project, internship, job, certification, coursework, hackathon and achievement.
+            Extract every tool, technology, framework, programming language, and design / marketing /
+            business / finance / domain skill that a person could practice or be interviewed on,
+            even if only implied by a project description.
+            Respond with ONLY a JSON array of short skill names (1-3 words each), maximum 40 items,
+            no duplicates, no markdown. Example: ["React","Figma","User Research","Financial Modeling"]
+            """;
+
+    /** Deep AI extraction: finds skills across the whole resume, not just keyword matches. */
+    public List<String> extractSkills(Long userId, String resumeText) {
+        AiClient client = resolver.forUserId(userId).orElse(null);
+        if (client == null || !client.isAvailable()) return List.of();
+        String text = resumeText.length() > 12000 ? resumeText.substring(0, 12000) : resumeText;
+        try {
+            String raw = client.complete(EXTRACT_SYSTEM, "Resume text:\n" + text + "\nJSON array of skills:");
+            if (raw == null) return List.of();
+            Matcher m = ARRAY_BLOCK.matcher(raw);
+            if (!m.find()) return List.of();
+            JsonNode arr = mapper.readTree(m.group());
+            java.util.LinkedHashSet<String> out = new java.util.LinkedHashSet<>();
+            arr.forEach(n -> {
+                String s = n.asText("").trim().replaceAll("\\s+", " ");
+                if (!s.isEmpty() && s.length() <= 40 && out.size() < 40) out.add(s);
+            });
+            log.info("AI resume extraction found {} skills", out.size());
+            return new ArrayList<>(out);
+        } catch (Exception e) {
+            log.warn("AI resume extraction failed: {}", e.getMessage());
+            return List.of();
+        }
+    }
 }

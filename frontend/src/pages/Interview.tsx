@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { ListChecks, Send } from 'lucide-react'
 import { api } from '../api/client'
@@ -15,6 +15,13 @@ export default function Interview() {
   const [texts, setTexts] = useState<Record<number, string>>({})
   const [results, setResults] = useState<Record<number, InterviewAnswerResult>>({})
   const [report, setReport] = useState<InterviewReport | null>(null)
+
+  // Interview is resume-driven: every skill extracted from your resume is selected by default.
+  useEffect(() => {
+    if (skills.data && skills.data.length > 0) {
+      setSelected(new Set(skills.data.map((s) => s.skillId)))
+    }
+  }, [skills.data])
 
   const start = useMutation({
     mutationFn: () =>

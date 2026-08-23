@@ -22,8 +22,10 @@ public class ChallengeController {
     }
 
     @GetMapping
-    public Object list(@RequestParam(required = false) String skill, @RequestParam(required = false) String type) {
-        return challenges.list(skill, type);
+    public Object list(@CurrentUserId Long userId,
+                       @RequestParam(required = false) String skill,
+                       @RequestParam(required = false) String type) {
+        return challenges.list(userId, skill, type);
     }
 
     @GetMapping("/{id}")

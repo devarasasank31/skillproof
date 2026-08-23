@@ -4,6 +4,7 @@ import { KeyRound, ChevronDown, MailCheck } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import type { AiSetup } from '../api/types'
 import { ErrorBanner } from '../components/ui'
+import { PitchCard } from '../components/PitchCard'
 
 const PROVIDERS = [
   { value: '', label: 'No AI key (deterministic grading only)' },
@@ -155,6 +156,7 @@ export default function Register() {
             Already registered? <Link className="font-medium text-indigo-600 hover:underline" to="/login">Sign in</Link>
           </p>
         </form>
+        <PitchCard />
       </div>
     </div>
   )

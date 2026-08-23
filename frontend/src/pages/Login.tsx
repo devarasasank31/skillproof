@@ -4,6 +4,7 @@ import { MailCheck } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { api } from '../api/client'
 import { ErrorBanner } from '../components/ui'
+import { PitchCard } from '../components/PitchCard'
 
 export default function Login() {
   const { login } = useAuth()
@@ -101,6 +102,7 @@ export default function Login() {
             No account? <Link className="font-medium text-indigo-600 hover:underline" to="/register">Register</Link>
           </p>
         </form>
+        <PitchCard />
       </div>
     </div>
   )

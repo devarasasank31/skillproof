@@ -1,5 +1,6 @@
 package com.skillproof.resume;
 
+import com.skillproof.ai.AiEvaluationService;
 import com.skillproof.common.RateLimiter;
 import com.skillproof.exception.ApiException;
 import com.skillproof.scoring.RecalculationService;
@@ -33,14 +34,17 @@ public class ResumeController {
     private final UserRepository users;
     private final RateLimiter rateLimiter;
     private final RecalculationService recalculation;
+    private final AiEvaluationService ai;
 
     public ResumeController(SkillCatalog catalog, SkillService skillService, UserRepository users,
-                            RateLimiter rateLimiter, RecalculationService recalculation) {
+                            RateLimiter rateLimiter, RecalculationService recalculation,
+                            AiEvaluationService ai) {
         this.catalog = catalog;
         this.skillService = skillService;
         this.users = users;
         this.rateLimiter = rateLimiter;
         this.recalculation = recalculation;
+        this.ai = ai;
     }
 
     @PostMapping("/analyze")
@@ -74,9 +78,18 @@ public class ResumeController {
         }
         int pages = Math.max(1, text.length() / 1800);
 
-        Set<String> detected = catalog.detect(text);
+        // 1) Fast deterministic dictionary scan.
+        Set<String> detected = new LinkedHashSet<>(catalog.detect(text));
+        // 2) Deep AI pass (users with their own API key): reads projects, internships,
+        //    certifications - every corner of the resume, not just keyword matches.
+        if (ai.available(userId)) {
+            for (String n : ai.extractSkills(userId, text)) {
+                boolean dup = detected.stream().anyMatch(d -> d.equalsIgnoreCase(n));
+                if (!dup) detected.add(n);
+            }
+        }
         List<DetectedSkill> out = new ArrayList<>();
-        for (String d : detected) {
+        for (String d : detected.stream().limit(40).toList()) {
             var s = catalog.findOrCreate(d, catalog.categoryOf(d));
             out.add(new DetectedSkill(s.getName(), s.getId()));
         }

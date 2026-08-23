@@ -19,7 +19,9 @@ export default function Challenges() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Challenges</h1>
-      <p className="text-sm text-slate-500">Practical, rubric-scored tasks that build real evidence for your skills.</p>
+      <p className="text-sm text-slate-500">
+        Practical tasks matched to YOUR resume skills — complete them to build real evidence.
+      </p>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {(q.data || []).map((c) => (
@@ -42,7 +44,10 @@ export default function Challenges() {
       </div>
       {!q.isLoading && (q.data || []).length === 0 && (
         <Card title="">
-          <EmptyState message="Challenge catalog is empty." hint="Run the seeder or check backend startup logs." />
+          <EmptyState
+            message="No challenges for your skills yet."
+            hint="Claim more skills from your resume analysis, or ask an admin to add challenges for your domain."
+          />
         </Card>
       )}
     </div>

@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 @Service
 public class ChallengeService {
@@ -36,11 +37,15 @@ public class ChallengeService {
         this.recalculation = recalculation;
     }
 
-    public List<PracticalChallenge> list(String skill, String type) {
-        List<PracticalChallenge> all = challenges.findAll();
-        return all.stream()
+    public List<PracticalChallenge> list(Long userId, String skill, String type) {
+        Set<String> mine = userSkills.findByUserId(userId).stream()
+                .map(us -> us.getSkill().getName())
+                .map(n -> n.toLowerCase(Locale.ROOT))
+                .collect(java.util.stream.Collectors.toSet());
+        return challenges.findAll().stream()
                 .filter(c -> skill == null || c.getSkillName().equalsIgnoreCase(skill))
                 .filter(c -> type == null || c.getType().equalsIgnoreCase(type))
+                .filter(c -> mine.contains(c.getSkillName().toLowerCase(Locale.ROOT)))
                 .toList();
     }
 
