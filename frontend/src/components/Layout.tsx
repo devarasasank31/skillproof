@@ -100,6 +100,15 @@ export default function Layout() {
               {label}
             </NavLink>
           ))}
+          <button
+            onClick={async () => {
+              await logout()
+              nav('/login')
+            }}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950/40"
+          >
+            <LogOut size={14} /> Sign out
+          </button>
         </nav>
         <main className="min-h-0 flex-1 overflow-y-auto p-6">
           <Outlet />
