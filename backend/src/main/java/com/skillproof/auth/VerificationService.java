@@ -7,10 +7,14 @@ import com.skillproof.user.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -29,6 +33,7 @@ public class VerificationService {
     private final UserRepository users;
     private final RateLimiter rateLimiter;
     private final JavaMailSender mailSender;
+    private final ApplicationEventPublisher events;
     private final boolean mailEnabled;
     private final String mailFrom;
     private final String appUrl;
@@ -38,6 +43,7 @@ public class VerificationService {
                                UserRepository users,
                                RateLimiter rateLimiter,
                                JavaMailSender mailSender,
+                               ApplicationEventPublisher events,
                                @Value("${app.mail.enabled:false}") boolean mailEnabled,
                                @Value("${app.mail.from}") String mailFrom,
                                @Value("${app.app-url:http://localhost:5173}") String appUrl) {
@@ -45,11 +51,17 @@ public class VerificationService {
         this.users = users;
         this.rateLimiter = rateLimiter;
         this.mailSender = mailSender;
+        this.events = events;
         this.mailEnabled = mailEnabled;
         this.mailFrom = mailFrom;
         this.appUrl = appUrl;
     }
 
+    /**
+     * Persists the token and publishes the email event. Fast, DB-only work happens
+     * synchronously; the SMTP round-trip is dispatched after the transaction commits
+     * so a slow/broken mail server can never block or fail registration.
+     */
     @Transactional
     public void sendLink(User user) {
         if (user.getEmailVerifiedAt() != null) return;
@@ -59,17 +71,24 @@ public class VerificationService {
         vt.setTokenHash(sha256(rawToken));
         vt.setExpiresAt(Instant.now().plus(TOKEN_TTL_HOURS, ChronoUnit.HOURS));
         tokens.save(vt);
+        events.publishEvent(new VerificationEmailEvent(
+                user.getId(), user.getEmail(), user.getName(),
+                appUrl + "/verify?token=" + rawToken));
+    }
 
-        String link = appUrl + "/verify?token=" + rawToken;
-        if (mailEnabled) {
-            try {
-                sendEmail(user.getEmail(), user.getName(), link);
-            } catch (Exception e) {
-                log.error("Failed to send verification email to {}", user.getEmail(), e);
-                log.info("Verification link for {} (email delivery failed): {}", user.getEmail(), link);
-            }
-        } else {
-            log.info("Mail disabled - verification link for {}: {}", user.getEmail(), link);
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void deliverEmail(VerificationEmailEvent e) {
+        User user = users.findById(e.userId()).orElse(null);
+        if (user == null || user.isDeleted() || user.getEmailVerifiedAt() != null) return;
+        long start = System.currentTimeMillis();
+        try {
+            sendEmail(e.email(), e.name(), e.link());
+            log.info("Verification email sent to {} in {}ms", e.email(), System.currentTimeMillis() - start);
+        } catch (Exception ex) {
+            log.error("Failed to send verification email to {} (took {}ms): {}",
+                    e.email(), System.currentTimeMillis() - start, ex.toString());
+            log.info("Fallback verification link for {}: {}", e.email(), e.link());
         }
     }
 

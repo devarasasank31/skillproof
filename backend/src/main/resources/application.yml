@@ -25,8 +25,13 @@ spring:
       mail:
         smtp:
           auth: true
+          connectiontimeout: 10000
+          timeout: 15000
+          writetimeout: 10000
           starttls:
-            enable: true
+            enable: ${MAIL_STARTTLS:true}
+          ssl:
+            enable: ${MAIL_SSL:false}
 
 app:
   app-url: ${APP_URL:http://localhost:5173}
