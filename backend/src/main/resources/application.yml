@@ -59,6 +59,7 @@ app:
   github:
     api-base: https://api.github.com
     per-page: 100
+    token: ${GITHUB_TOKEN:}
   ai:
     provider: ${AI_PROVIDER:auto}
     base-url: ${AI_BASE_URL:http://localhost:11434}

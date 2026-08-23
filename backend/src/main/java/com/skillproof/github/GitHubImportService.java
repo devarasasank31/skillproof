@@ -9,6 +9,9 @@ import com.skillproof.skill.UserSkillRepository;
 import com.skillproof.scoring.RecalculationService;
 import com.skillproof.user.UserRepository;
 import com.skillproof.common.RateLimiter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
@@ -19,6 +22,8 @@ import java.util.*;
 
 @Service
 public class GitHubImportService {
+
+    private static final Logger log = LoggerFactory.getLogger(GitHubImportService.class);
 
     public record RepoRow(String name, String description, String primaryLanguage, List<String> languages,
                           List<String> topics, Instant pushedAt) {}
@@ -39,7 +44,8 @@ public class GitHubImportService {
     public GitHubImportService(GitHubProfileRepository profiles, GitHubRepoRepository repos,
                                SkillRepository skills, UserSkillRepository userSkills, UserRepository users,
                                SkillEvidenceRepository evidence, RecalculationService recalculation,
-                               RateLimiter rateLimiter) {
+                               RateLimiter rateLimiter,
+                               @Value("${app.github.token:}") String githubToken) {
         this.profiles = profiles;
         this.repos = repos;
         this.skills = skills;
@@ -48,7 +54,16 @@ public class GitHubImportService {
         this.evidence = evidence;
         this.recalculation = recalculation;
         this.rateLimiter = rateLimiter;
-        this.http = RestClient.create();
+        RestClient.Builder builder = RestClient.builder()
+                .baseUrl("https://api.github.com")
+                .defaultHeader("Accept", "application/vnd.github+json")
+                .defaultHeader("User-Agent", "skillproof-app");
+        if (githubToken != null && !githubToken.isBlank()) {
+            // Authenticated requests get 5,000/hour dedicated to this token instead of
+            // 60/hour shared with every other app on the host's IP.
+            builder.defaultHeader("Authorization", "Bearer " + githubToken.trim());
+        }
+        this.http = builder.build();
     }
 
     @Transactional
@@ -65,13 +80,14 @@ public class GitHubImportService {
         List<Map<String, Object>> ghRepos;
         try {
             ghRepos = http.get()
-                    .uri("https://api.github.com/users/{u}/repos?per_page=100&sort=pushed", username)
-                    .header("Accept", "application/vnd.github+json")
+                    .uri("/users/{u}/repos?per_page=100&sort=pushed", username)
                     .retrieve()
                     .body(List.class);
         } catch (Exception e) {
+            log.warn("GitHub fetch failed for '{}': {}", username, e.toString());
             throw new ApiException(502, "GITHUB_UNAVAILABLE",
-                    "Could not fetch repositories from GitHub. It may be down or rate-limited. Try again later.");
+                    "Could not reach GitHub (rate-limited or unavailable). Add a GITHUB_TOKEN on the server "
+                            + "for 5,000 requests/hour, or try again in a few minutes.");
         }
         if (ghRepos == null || ghRepos.isEmpty()) {
             throw ApiException.notFound("No public repositories found for '" + username + "'");
