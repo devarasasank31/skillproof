@@ -1,0 +1,1351 @@
+[
+ {
+  "skillName": "Java",
+  "type": "MCQ",
+  "difficulty": "EASY",
+  "prompt": "Which interface does not allow duplicate elements?",
+  "options": [
+   "List",
+   "Set",
+   "Map",
+   "Queue"
+  ],
+  "answerKey": "Set",
+  "explanation": "Set implementations reject duplicates."
+ },
+ {
+  "skillName": "Java",
+  "type": "SUBJECTIVE",
+  "difficulty": "MEDIUM",
+  "prompt": "Explain how HashMap works internally.",
+  "keywords": [
+   "hash function",
+   "bucket|index",
+   "collision",
+   "equals",
+   "hashCode",
+   "load factor|resize"
+  ],
+  "explanation": "Should mention hashing to buckets, collision handling via linked lists/trees, equals/hashCode contract and resizing on load factor."
+ },
+ {
+  "skillName": "Java",
+  "type": "DEBUGGING",
+  "difficulty": "MEDIUM",
+  "prompt": "A HashMap key class only overrides hashCode(), not equals(). What bug appears?",
+  "keywords": [
+   "duplicate keys",
+   "equals",
+   "lookup fail|containsKey false",
+   "contract"
+  ],
+  "explanation": "Equal objects may not be found because equals defaults to identity; duplicates can appear."
+ },
+ {
+  "skillName": "Java",
+  "type": "CODING",
+  "difficulty": "HARD",
+  "prompt": "Describe an efficient approach to detect a cycle in a linked list and remove it.",
+  "keywords": [
+   "fast pointer|slow pointer",
+   "floyd",
+   "tortoise|hare",
+   "O(1) space|constant space",
+   "meet",
+   "start of cycle"
+  ],
+  "explanation": "Floyd's algorithm: meet point, then reset one pointer to head, advance both by one until they meet again at cycle start."
+ },
+ {
+  "skillName": "Spring Boot",
+  "type": "MCQ",
+  "difficulty": "EASY",
+  "prompt": "Which annotation marks a method as a scheduled task?",
+  "options": [
+   "@Async",
+   "@Scheduled",
+   "@EnableScheduling on method",
+   "@Cron"
+  ],
+  "answerKey": "@Scheduled",
+  "explanation": "@Scheduled marks methods; @EnableScheduling activates scheduling on a configuration class."
+ },
+ {
+  "skillName": "Spring Boot",
+  "type": "SUBJECTIVE",
+  "difficulty": "MEDIUM",
+  "prompt": "How would you design global exception handling in a Spring Boot REST API?",
+  "keywords": [
+   "@RestControllerAdvice|@ControllerAdvice",
+   "@ExceptionHandler",
+   "ResponseEntity|error response",
+   "consistent format|error body"
+  ],
+  "explanation": "Use @RestControllerAdvice with @ExceptionHandler methods returning a consistent error DTO."
+ },
+ {
+  "skillName": "Spring Boot",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "Walk through what happens when a request hits a Spring Boot endpoint from filter to response.",
+  "keywords": [
+   "filter chain|security filter",
+   "dispatcher servlet",
+   "handler mapping|controller",
+   "argument resolver",
+   "serialization|jackson|response"
+  ],
+  "explanation": "Filters → DispatcherServlet → HandlerMapping → argument resolution → controller → serialization."
+ },
+ {
+  "skillName": "SQL",
+  "type": "SQL",
+  "difficulty": "MEDIUM",
+  "prompt": "Given tables customers(id, name) and orders(id, customer_id, total), write a query returning the top 3 customers by total order value.",
+  "keywords": [
+   "sum(total)|group by",
+   "order by",
+   "desc",
+   "limit 3|top 3|fetch first"
+  ],
+  "explanation": "SELECT c.name, SUM(o.total) FROM orders o JOIN customers c ON c.id=o.customer_id GROUP BY c.name ORDER BY 2 DESC LIMIT 3;"
+ },
+ {
+  "skillName": "SQL",
+  "type": "MCQ",
+  "difficulty": "EASY",
+  "prompt": "Which join returns all rows from the left table even without matches on the right?",
+  "options": [
+   "INNER JOIN",
+   "LEFT JOIN",
+   "RIGHT JOIN",
+   "CROSS JOIN"
+  ],
+  "answerKey": "LEFT JOIN",
+  "explanation": "LEFT JOIN preserves unmatched left rows with NULL right columns."
+ },
+ {
+  "skillName": "SQL",
+  "type": "DEBUGGING",
+  "difficulty": "HARD",
+  "prompt": "A query filtering WHERE YEAR(created_at)=2025 runs slowly on millions of rows. Why, and how to fix it?",
+  "keywords": [
+   "index not used|non-sargable|function on column",
+   "range condition|>= and <",
+   "created_at index|composite index"
+  ],
+  "explanation": "Wrapping the column in a function prevents index use; rewrite as a range predicate like created_at >= '2025-01-01' AND created_at < '2026-01-01'."
+ },
+ {
+  "skillName": "Docker",
+  "type": "CONCEPT",
+  "difficulty": "MEDIUM",
+  "prompt": "What is the difference between CMD and ENTRYPOINT in a Dockerfile?",
+  "keywords": [
+   "default command",
+   "entrypoint fixed executable",
+   "overridable|docker run arguments|append"
+  ],
+  "explanation": "ENTRYPOINT defines the executable; CMD provides default args that are replaced unless ENTRYPOINT exists, then args append."
+ },
+ {
+  "skillName": "Docker",
+  "type": "MCQ",
+  "difficulty": "EASY",
+  "prompt": "Which file defines multi-container applications?",
+  "options": [
+   "Dockerfile",
+   "docker-compose.yml",
+   "containerd.conf",
+   "manifest.yaml"
+  ],
+  "answerKey": "docker-compose.yml",
+  "explanation": "Compose files define services, networks and volumes for multi-container apps."
+ },
+ {
+  "skillName": "AWS",
+  "type": "MCQ",
+  "difficulty": "EASY",
+  "prompt": "Which service is AWS's object storage?",
+  "options": [
+   "EC2",
+   "RDS",
+   "S3",
+   "Lambda"
+  ],
+  "answerKey": "S3",
+  "explanation": "S3 is object storage; EBS/EFS are block/file storage."
+ },
+ {
+  "skillName": "AWS",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "How would you secure credentials used by an application running on EC2?",
+  "keywords": [
+   "IAM role|instance profile",
+   "no hardcode|not in code|environment variable caution",
+   "secrets manager|parameter store",
+   "least privilege"
+  ],
+  "explanation": "Attach IAM roles, use Secrets Manager/SSM Parameter Store, apply least privilege."
+ },
+ {
+  "skillName": "Kafka",
+  "type": "SUBJECTIVE",
+  "difficulty": "MEDIUM",
+  "prompt": "Explain consumer groups and offset management in Kafka.",
+  "keywords": [
+   "group id|consumer group",
+   "partition assigned",
+   "offset commit|committed offset",
+   "rebalance",
+   "at least once|exactly once"
+  ],
+  "explanation": "Consumers in a group share partitions; offsets track progress and are committed; rebalances redistribute partitions."
+ },
+ {
+  "skillName": "Kafka",
+  "type": "DEBUGGING",
+  "difficulty": "HARD",
+  "prompt": "Your consumer falls behind and lag keeps growing. List likely causes and fixes.",
+  "keywords": [
+   "slow processing|processing time",
+   "increase partitions|scale consumers",
+   "poll loop|max.poll.interval",
+   "batch size",
+   "async processing"
+  ],
+  "explanation": "Slow handlers, insufficient partitions/consumers, long poll intervals; scale out or optimize processing."
+ },
+ {
+  "skillName": "React",
+  "type": "MCQ",
+  "difficulty": "EASY",
+  "prompt": "Which hook manages side effects?",
+  "options": [
+   "useState",
+   "useEffect",
+   "useMemo",
+   "useRef"
+  ],
+  "answerKey": "useEffect",
+  "explanation": "useEffect handles side effects like fetching, subscriptions, timers."
+ },
+ {
+  "skillName": "React",
+  "type": "DEBUGGING",
+  "difficulty": "MEDIUM",
+  "prompt": "A component refetches infinitely when using useEffect with an object dependency. Explain why and fix it.",
+  "keywords": [
+   "new object reference every render|identity",
+   "dependency array",
+   "useMemo|primitive values",
+   "stable dependency"
+  ],
+  "explanation": "Objects recreated each render change identity; memoize or depend on primitive fields."
+ },
+ {
+  "skillName": "System Design",
+  "type": "SYSTEM_DESIGN",
+  "difficulty": "HARD",
+  "prompt": "Design a URL shortener handling millions of requests per day. Cover storage, ID generation, redirects and analytics.",
+  "keywords": [
+   "base62|id generation|counter",
+   "hash map cache|redis|cdn",
+   "database|key value store",
+   "read heavy|ratio",
+   "rate limit|analytics|async"
+  ],
+  "explanation": "Expect counter/base62 IDs, KV store, caching hot links, read/write ratio reasoning, async analytics."
+ },
+ {
+  "skillName": "System Design",
+  "type": "ARCHITECTURE",
+  "difficulty": "MEDIUM",
+  "prompt": "Design an idempotent payment API.",
+  "keywords": [
+   "idempotency key",
+   "unique constraint|store key",
+   "same response|replay",
+   "retry safe"
+  ],
+  "explanation": "Client supplies an Idempotency-Key; server stores key with result and replays stored response on retry."
+ },
+ {
+  "skillName": "DSA",
+  "type": "CODING",
+  "difficulty": "MEDIUM",
+  "prompt": "Describe your implementation of an LRU cache with O(1) get and put.",
+  "keywords": [
+   "hash map|dictionary",
+   "doubly linked list|linked hashmap",
+   "move to front|recency",
+   "evict|capacity"
+  ],
+  "explanation": "HashMap maps keys to nodes of a doubly linked list; evict tail on overflow."
+ },
+ {
+  "skillName": "DSA",
+  "type": "MCQ",
+  "difficulty": "EASY",
+  "prompt": "Average time complexity of binary search?",
+  "options": [
+   "O(n)",
+   "O(log n)",
+   "O(n log n)",
+   "O(1)"
+  ],
+  "answerKey": "O(log n)",
+  "explanation": "Each step halves the search space."
+ },
+ {
+  "skillName": "REST API",
+  "type": "REST_API",
+  "difficulty": "MEDIUM",
+  "prompt": "Design REST endpoints for a paginated product listing with filters.",
+  "keywords": [
+   "page|offset|cursor",
+   "size|limit",
+   "sort",
+   "filter parameters",
+   "200 ok",
+   "total count|metadata"
+  ],
+  "explanation": "GET /products?page=&size=&sort=&category= returning {content,totalPages,...} metadata."
+ },
+ {
+  "skillName": "REST API",
+  "type": "MCQ",
+  "difficulty": "EASY",
+  "prompt": "Which HTTP status fits a successful POST creating a resource?",
+  "options": [
+   "200",
+   "201",
+   "202",
+   "204"
+  ],
+  "answerKey": "201",
+  "explanation": "201 Created signals a new resource was created, ideally with Location header."
+ },
+ {
+  "skillName": "PostgreSQL",
+  "type": "SQL",
+  "difficulty": "MEDIUM",
+  "prompt": "How do you find and fix a slow query in PostgreSQL?",
+  "keywords": [
+   "explain analyze",
+   "execution plan|query plan",
+   "seq scan|index scan",
+   "index|create index",
+   "statistics|vacuum|analyze"
+  ],
+  "explanation": "EXPLAIN (ANALYZE, BUFFERS) reveals scans/joins; add appropriate indexes, refresh statistics."
+ },
+ {
+  "skillName": "Java",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Tell me about the Java memory model. Where do objects, local variables and static fields live?",
+  "options": null,
+  "answerKey": "Objects live on the heap; local variables and references live on the stack per thread; static fields live in method area/metaspace. Threads share the heap, which is why visibility issues arise without synchronization or volatile.",
+  "keywords": [
+   "heap",
+   "stack",
+   "thread",
+   "static|metaspace",
+   "synchroniz|volatile"
+  ],
+  "explanation": "Strong answers separate thread-private stack from shared heap and mention happens-before/volatile."
+ },
+ {
+  "skillName": "Java",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "When would you choose a CompletableFuture over plain ExecutorService futures?",
+  "options": null,
+  "answerKey": "CompletableFuture supports non-blocking composition: chaining thenApply/thenCompose, combining results, exception handling with exceptionally, and callbacks that don't block caller threads. Plain Futures only support blocking get().",
+  "keywords": [
+   "non-blocking|asynchronous",
+   "thenApply|thenCompose|thenCombine",
+   "exceptionally|handle",
+   "get(|blocking"
+  ],
+  "explanation": "Look for composition, async chaining and non-blocking callbacks vs blocking get()."
+ },
+ {
+  "skillName": "Java",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "How does the JVM garbage collector decide what to collect, and how would you diagnose a memory leak in production?",
+  "options": null,
+  "answerKey": "GC starts from GC roots (thread stacks, statics, JNI) and marks reachable objects; unreachable ones are collected. Leaks are diagnosed via heap dumps (jmap/jcmd), analyzing dominator trees with MAT, watching old-gen usage trends and GC pause metrics.",
+  "keywords": [
+   "GC root|mark",
+   "reachab|unreachable",
+   "heap dump",
+   "jmap|jcmd|MPL|MAT",
+   "old gen|pause"
+  ],
+  "explanation": "Expect mark-and-reachability model plus practical tooling: heap dumps, MAT, GC logs."
+ },
+ {
+  "skillName": "Spring Boot",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "What problem do Spring Boot starters solve, and how does auto-configuration work under the hood?",
+  "options": null,
+  "answerKey": "Starters bundle curated dependency sets so you don't chase compatible versions. Auto-configuration uses @ConditionalOnClass/@ConditionalOnMissingBean conditions evaluated at startup to register beans only when relevant classes are present and the user hasn't defined their own.",
+  "keywords": [
+   "starter|dependency",
+   "auto-configur",
+   "@Conditional|condition",
+   "classpath",
+   "override|@ConditionalOnMissingBean"
+  ],
+  "explanation": "Mention starters as dependency aggregates and conditional bean registration driven by classpath."
+ },
+ {
+  "skillName": "Spring Boot",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "How do transactions work in Spring, and what is the @Transactional pitfall with self-invocation?",
+  "options": null,
+  "answerKey": "Spring transactions are implemented with AOP proxies. @Transactional on a method called from another method of the same object bypasses the proxy, so the transaction never starts. Fixes: split beans, self-injection, or TransactionTemplate.",
+  "keywords": [
+   "AOP|proxy",
+   "@Transactional",
+   "self-invocation|internal call",
+   "rollback|propagation"
+  ],
+  "explanation": "The proxy-based nature and the self-invocation bypass are the key points."
+ },
+ {
+  "skillName": "Spring Boot",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "How would you design graceful shutdown for a Spring Boot service behind a load balancer?",
+  "options": null,
+  "answerKey": "Enable server.shutdown=graceful so in-flight requests finish within a timeout, stop accepting new work (readiness probe flips), drain message listeners, close connection pools last, and coordinate with the LB health check so traffic stops before the process dies.",
+  "keywords": [
+   "graceful",
+   "in-flight|drain",
+   "readiness|health check",
+   "timeout",
+   "connection pool|listener"
+  ],
+  "explanation": "Order matters: stop intake, finish in-flight work, then release resources."
+ },
+ {
+  "skillName": "SQL",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Your report query joins five large tables and takes minutes. Walk me through how you'd optimize it.",
+  "options": null,
+  "answerKey": "Read EXPLAIN ANALYZE first to find the slow node. Add indexes matching join and filter columns, check for functions wrapping indexed columns, reduce joined data early with CTEs/subqueries, verify statistics, consider materialized views for repeated aggregation.",
+  "keywords": [
+   "EXPLAIN|execution plan",
+   "index",
+   "statistics|ANALYZE",
+   "join order|CTE|subquery",
+   "materialized|denormaliz"
+  ],
+  "explanation": "Measure first (EXPLAIN ANALYZE), then index, then restructure - in that order."
+ },
+ {
+  "skillName": "SQL",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Explain the difference between WHERE and HAVING with an example you have actually written.",
+  "options": null,
+  "answerKey": "WHERE filters rows before grouping; HAVING filters groups after aggregation. Example: WHERE country='US' then GROUP BY city then HAVING COUNT(*)>10 keeps only US cities with more than 10 rows.",
+  "keywords": [
+   "before grouping|rows",
+   "after aggregation|groups",
+   "GROUP BY",
+   "aggregate|COUNT|SUM"
+  ],
+  "explanation": "Filter timing relative to GROUP BY is the core concept."
+ },
+ {
+  "skillName": "SQL",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "How would you paginate 50 million rows efficiently, and why is OFFSET a problem?",
+  "options": null,
+  "answerKey": "OFFSET must scan and discard all skipped rows, so page N costs O(N). Keyset pagination filters on an indexed, unique, sortable cursor: WHERE (created_at,id) > (:last_seen...) ORDER BY created_at, id LIMIT page_size - constant cost per page.",
+  "keywords": [
+   "OFFSET|scan",
+   "keyset|cursor|seek",
+   "index",
+   "unique tiebreaker|stable order"
+  ],
+  "explanation": "Keyset/seek method with an indexed cursor and stable ordering is the right answer."
+ },
+ {
+  "skillName": "PostgreSQL",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Explain MVCC in PostgreSQL. What problem does it solve and what housekeeping does it need?",
+  "options": null,
+  "answerKey": "MVCC gives each transaction a consistent snapshot; writers create new row versions instead of locking readers. Old versions become dead tuples that VACUUM must reclaim, otherwise table bloat degrades performance and transaction ID wraparound becomes a risk.",
+  "keywords": [
+   "snapshot|consistent",
+   "row version|xmin",
+   "dead tuple|bloat",
+   "VACUUM|autovacuum",
+   "wraparound"
+  ],
+  "explanation": "Snapshot isolation plus dead tuples/VACUUM are the essentials."
+ },
+ {
+  "skillName": "PostgreSQL",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "When would you pick a JSONB column over normalized tables, and what are the trade-offs?",
+  "options": null,
+  "answerKey": "JSONB fits schema-flexible, write-once-read-with-document payloads like event bodies or external API responses. Trade-offs: GIN indexes needed for containment queries, no foreign keys inside documents, weaker type enforcement, potential bloat versus rigid normalization.",
+  "keywords": [
+   "schema-less|flexible",
+   "GIN index",
+   "containment|@>",
+   "foreign key|constraint",
+   "bloat|trade-off"
+  ],
+  "explanation": "Balance flexibility against indexing, integrity and size costs."
+ },
+ {
+  "skillName": "Docker",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Walk me through how you'd shrink a 1.2GB application image to under 200MB.",
+  "options": null,
+  "answerKey": "Use a multi-stage build so build tools never ship, switch base from full distro to alpine/distroless/slim, leverage layer caching by copying pom/package files before source, run as non-root user, and clean package caches in the same layer that installs them.",
+  "keywords": [
+   "multi-stage",
+   "alpine|slim|distroless",
+   "layer cache|order",
+   "same layer|rm cache",
+   "non-root"
+  ],
+  "explanation": "Multi-stage builds and minimal bases are the two biggest levers."
+ },
+ {
+  "skillName": "Docker",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "A container works locally but dies immediately in production. How do you debug it?",
+  "options": null,
+  "answerKey": "Check exit code and docker logs first, run with an interactive shell overriding entrypoint to inspect environment, config and file paths, verify env vars/secrets injection differ between environments, watch memory limits (OOMKilled shows in inspect), and confirm port/host bindings.",
+  "keywords": [
+   "logs|exit code",
+   "interactive|sh|exec",
+   "environment|env vars|config",
+   "OOMKilled|memory limit",
+   "entrypoint|command override"
+  ],
+  "explanation": "Systematic: logs - interactive inspection - env/config diff - resource limits."
+ },
+ {
+  "skillName": "Kubernetes",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Explain the difference between a Deployment, a StatefulSet, and a DaemonSet - when do you use each?",
+  "options": null,
+  "answerKey": "Deployment manages stateless replicas with rolling updates and random pod identity. StatefulSet gives stable network identities and ordered storage-backed pods for databases/queues. DaemonSet runs exactly one pod per node for log collectors, monitors and node agents.",
+  "keywords": [
+   "stateless|rolling",
+   "stable identity|ordered|PVC|volume",
+   "per node|node agent|logging|monitoring"
+  ],
+  "explanation": "Identity, ordering and placement semantics distinguish the three controllers."
+ },
+ {
+  "skillName": "Kubernetes",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "A pod is stuck in CrashLoopBackOff. Describe your triage steps.",
+  "options": null,
+  "answerKey": "kubectl describe pod for events and exit codes, kubectl logs --previous for the crashing container's output, verify liveness/readiness probes aren't killing a slow-starting app, check config maps/secrets mount correctly, confirm resource limits aren't OOM-killing it, then fix root cause rather than restarting blindly.",
+  "keywords": [
+   "describe|events",
+   "logs --previous|--previous",
+   "probe|liveness|readiness",
+   "configmap|secret|mount",
+   "OOM|limit"
+  ],
+  "explanation": "Events + previous logs identify most crash loops; probes and resources are common culprits."
+ },
+ {
+  "skillName": "AWS",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Design the deployment architecture for a web app on AWS that must survive an availability zone outage.",
+  "options": null,
+  "answerKey": "Run instances or containers across at least two AZs behind an ALB, data in multi-AZ RDS/Aurora with automated failover, static assets on S3+CloudFront, health checks driving instance replacement, and Route 53 for DNS failover. Test failover regularly.",
+  "keywords": [
+   "multi-AZ|two AZs",
+   "ALB|load balancer",
+   "RDS|Aurora|failover",
+   "CloudFront|S3",
+   "Route 53|health check"
+  ],
+  "explanation": "Redundancy across AZs at every tier: compute, load balancing, data, DNS."
+ },
+ {
+  "skillName": "AWS",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "How would you cut a growing AWS bill without hurting reliability?",
+  "options": null,
+  "answerKey": "Tag and attribute costs first, right-size or autoscale over-provisioned EC2/RDS, buy Savings Plans/Reserved capacity for steady baselines, move spiky workloads to Spot, lifecycle stale S3 data to infrequent access/glacier, delete orphaned EBS volumes/snapshots and idle NAT gateways/load balancers.",
+  "keywords": [
+   "cost tagging|attribution",
+   "right-siz|autoscal",
+   "reserved|savings plan",
+   "spot",
+   "S3 lifecycle|tiering",
+   "orphan|unused|idle"
+  ],
+  "explanation": "Measure, baseline-reserve, spot-the-spiky, tier-the-cold, delete-the-forgotten."
+ },
+ {
+  "skillName": "Kafka",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Explain Kafka's delivery guarantees. What do you need for exactly-once processing?",
+  "options": null,
+  "answerKey": "Default is at-least-once with retries plus possible duplicates. Exactly-once needs idempotent producers (enable.idempotence), acks=all with min.insync.replicas, transactional producers for atomic multi-partition writes, and read-process-write loops consuming offsets within the same transaction or dedup by key on the consumer side.",
+  "keywords": [
+   "at-least-once|duplicate",
+   "idempotent producer",
+   "acks=all|min.insync.replicas",
+   "transactional|transaction",
+   "offset commit|consumer dedup"
+  ],
+  "explanation": "Idempotence kills producer dupes; transactions make read-process-write atomic."
+ },
+ {
+  "skillName": "Kafka",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "How do you choose the number of partitions for a new topic?",
+  "options": null,
+  "answerKey": "Size for target throughput: partitions = max(target throughput / per-consumer throughput, target latency budget) with headroom, keeping key ordering requirements in mind. More partitions increases parallelism but also open files, replication traffic and rebalance time; prefer over-partitioning slightly since reducing later is hard.",
+  "keywords": [
+   "throughput|consumer parallelism",
+   "ordering|key",
+   "headroom|future growth",
+   "overhead|rebalance",
+   "hard to reduce|add partitions"
+  ],
+  "explanation": "Throughput math plus ordering constraints, erring high because shrinking is painful."
+ },
+ {
+  "skillName": "React",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Explain the React rendering lifecycle: what happens between a state update and pixels on screen?",
+  "options": null,
+  "answerKey": "setState schedules a render; React calls the component function producing new elements, diffs against the previous virtual DOM (reconciliation with keys), computes minimal DOM mutations, commits them synchronously, then runs layout effects and passive effects (useEffect) after paint.",
+  "keywords": [
+   "render|schedule",
+   "virtual DOM|reconcil|diff",
+   "commit|DOM mutation",
+   "useEffect|effect|paint"
+  ],
+  "explanation": "Render phase (pure), commit phase (mutations), then effects after paint."
+ },
+ {
+  "skillName": "React",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "How do you prevent unnecessary re-renders in a large React app without breaking correctness?",
+  "options": null,
+  "answerKey": "Measure with React DevTools profiler first. Then stabilize references (useCallback/useMemo, moving objects out of components), lift state down or use context/selectors so only consumers rerender, memoize expensive subtrees, and virtualize long lists. Avoid premature memoization that freezes bugs in.",
+  "keywords": [
+   "profiler|measure",
+   "useMemo|useCallback|reference",
+   "memo|context|selector",
+   "virtuali|windowing",
+   "premature"
+  ],
+  "explanation": "Profile first, fix reference identity and state scope, then memoize selectively."
+ },
+ {
+  "skillName": "TypeScript",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Explain the difference between unknown and any, and when you'd use each.",
+  "options": null,
+  "answerKey": "any disables type checking entirely and propagates unsafely. unknown accepts anything but forces narrowing before use, making it safe for untrusted input like API responses or parsed JSON. Prefer unknown at boundaries, any only as a documented escape hatch.",
+  "keywords": [
+   "any|no checking|unsafe",
+   "unknown|narrow|guard",
+   "boundary|external input|parse",
+   "escape hatch|last resort"
+  ],
+  "explanation": "unknown = safe top type requiring validation; any = checking off."
+ },
+ {
+  "skillName": "JavaScript",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Explain the event loop, microtasks and macrotasks with a concrete ordering example.",
+  "options": null,
+  "answerKey": "JS runs one call stack; async callbacks queue up. Microtasks (promise reactions, queueMicrotask) drain completely after the current task before the next macrotask (setTimeout, I/O) runs. So Promise.resolve().then(log) prints before setTimeout(log,0) even with zero delay.",
+  "keywords": [
+   "call stack|single thread",
+   "microtask|promise",
+   "macrotask|setTimeout|task queue",
+   "drain|before|ordering"
+  ],
+  "explanation": "Microtask queue fully drains between macrotasks - classic promise-vs-setTimeout question."
+ },
+ {
+  "skillName": "Node.js",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Node is single-threaded - how does it serve thousands of concurrent connections, and when does it fall apart?",
+  "options": null,
+  "answerKey": "libuv's event loop multiplexes non-blocking I/O; concurrency comes from not waiting. It falls apart on CPU-bound work (hashing, image processing, big JSON) that blocks the loop - solutions: worker_threads, child processes, or pushing heavy jobs to a queue/other service.",
+  "keywords": [
+   "event loop|libuv|non-blocking",
+   "I/O|concurrent",
+   "CPU-bound|block",
+   "worker_threads|cluster|queue"
+  ],
+  "explanation": "Great for I/O-bound; CPU-heavy work blocks the loop - offload it."
+ },
+ {
+  "skillName": "Python",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "What is the GIL and how do you actually achieve parallelism in Python?",
+  "options": null,
+  "answerKey": "The GIL lets only one thread execute bytecode at a time, so threads help I/O-bound work but not CPU-bound. Real parallelism uses multiprocessing or process pools, native extensions releasing the GIL, or moving hot paths to compiled libraries like NumPy.",
+  "keywords": [
+   "GIL|one thread|bytecode",
+   "I/O-bound vs CPU-bound",
+   "multiprocessing|process pool",
+   "NumPy|C extension|release"
+  ],
+  "explanation": "Threads for I/O, processes or C extensions for CPU - that's the split."
+ },
+ {
+  "skillName": "Go",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Explain Go channels and goroutines. When do you use a buffered channel vs unbuffered?",
+  "options": null,
+  "answerKey": "Goroutines are cheap concurrent execution units multiplexed onto OS threads; channels pass data between them with happens-before guarantees. Unbuffered channels synchronize handoff - send blocks until receive. Buffered channels decouple producer/consumer up to capacity, useful for bounded worker pools; close signals completion, select handles multiple channels.",
+  "keywords": [
+   "goroutine|lightweight|multiplex",
+   "channel|communicate",
+   "unbuffered|synchron|handoff",
+   "buffered|capacity|decoupl",
+   "select|close"
+  ],
+  "explanation": "Unbuffered = rendezvous; buffered = bounded queue; select for fan-in."
+ },
+ {
+  "skillName": "System Design",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "Design a rate limiter for a public API. Cover algorithms, distribution and failure modes.",
+  "options": null,
+  "answerKey": "Token bucket or sliding window counter per key (user/IP/route). In a cluster, keep counters in Redis with atomic Lua scripts or a dedicated service; decide fail-open vs fail-closed on Redis outage; return 429 with Retry-After; use sliding windows to avoid boundary bursts; document limits in headers.",
+  "keywords": [
+   "token bucket|sliding window",
+   "Redis|atomic|centralized",
+   "429|Retry-After",
+   "fail-open|fail-closed|degrade",
+   "distributed|per-instance"
+  ],
+  "explanation": "Algorithm choice, shared state strategy, and degraded-mode behavior are the graders."
+ },
+ {
+  "skillName": "System Design",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "How would you design a notification system that reliably delivers email/push/pull notifications to millions of users?",
+  "options": null,
+  "answerKey": "Producers publish events to a queue; worker pool consumes and fans out through channel-specific senders with provider APIs (SES/FCM). Persist notification state for dedup and user preferences filtering, retry with exponential backoff on failures, dead-letter undeliverable, and batch/digest to control volume.",
+  "keywords": [
+   "queue|async",
+   "fan-out|worker|sender",
+   "preferences|dedup|state",
+   "retry|backoff|dead letter",
+   "batch|digest|throttle"
+  ],
+  "explanation": "Queue-driven fan-out with state, retries and preference filtering."
+ },
+ {
+  "skillName": "DSA",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "How do you approach a problem when you're stuck in a coding interview? Walk me through your process.",
+  "options": null,
+  "answerKey": "Restate constraints and sizes to bound complexity, brute force first while stating its complexity, find the bottleneck, map to known patterns (two pointers, hashmap, heap, BFS/DFS, DP) and test edge cases before coding. Communicate trade-offs throughout rather than going silent.",
+  "keywords": [
+   "constraints|input size",
+   "brute force|naive first",
+   "pattern|two pointer|hash|BFS|DP",
+   "edge case|test",
+   "communicate|trade-off"
+  ],
+  "explanation": "Structured escalation: understand, brute-force, optimize by pattern, verify edges."
+ },
+ {
+  "skillName": "DSA",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "When would you use a heap over a sorted structure, and what are its real-world costs?",
+  "options": null,
+  "answerKey": "Heaps give O(log n) insert/extract-min with O(1) peek - ideal for top-k, schedulers and merge-k-lists - but poor for arbitrary lookup or range scans where balanced BSTs/sorted arrays win. Cache locality is worse than arrays; sift operations mutate unpredictably, hurting concurrency.",
+  "keywords": [
+   "O(log n) insert|extract|priority",
+   "top-k|scheduler|merge k",
+   "lookup|range|BST|sorted array",
+   "cache|locality|memory"
+  ],
+  "explanation": "Priority-ordered access cheap; ordered traversal/expensive lookups point elsewhere."
+ },
+ {
+  "skillName": "REST API",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "How do you version a REST API without breaking existing clients?",
+  "options": null,
+  "answerKey": "Path versioning (/v1/) is the pragmatic default for major breaks; headers/media types suit fine-grained negotiation. Within a version: additive-only changes (new optional fields, new endpoints), tolerate unknown fields on input, deprecate with Sunset headers and dual-running periods before removal.",
+  "keywords": [
+   "URI|path versioning|header versioning",
+   "additive|backward compatible",
+   "deprecat|Sunset|migration window",
+   "breaking change|major"
+  ],
+  "explanation": "Major versions explicit, minor evolution additive, retire with notice."
+ },
+ {
+  "skillName": "REST API",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "A client integration keeps hitting your API 50 times per second when it should poll once a minute. What do you do?",
+  "options": null,
+  "answerKey": "Short term: rate limit with 429 and Retry-After so they back off. Medium: contact the integrator - often a retry loop missing backoff; require jittered exponential backoff in your client SDK. Long term: offer webhooks/event pushes so polling isn't needed, and cache aggressively server-side if load persists.",
+  "keywords": [
+   "429|rate limit|Retry-After",
+   "backoff|jitter|retry storm",
+   "webhook|push|event",
+   "cache|ETag"
+  ],
+  "explanation": "Protect with limits, fix their retries, eliminate polling with push."
+ },
+ {
+  "skillName": "Redis",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "How do you design a cache with Redis that stays correct when underlying data changes?",
+  "options": null,
+  "answerKey": "Cache-aside pattern: read cache first, on miss load DB then set with TTL. On writes, invalidate (delete) the key after committing - or use short TTLs accepting staleness. Guard against stampedes with locks/single-flight or probabilistic early expiry; monitor hit ratio.",
+  "keywords": [
+   "cache-aside|lazy loading",
+   "TTL|expire",
+   "invalidat|delete on write|evict",
+   "stampede|lock|single-flight",
+   "hit ratio"
+  ],
+  "explanation": "Cache-aside + invalidation-on-write + stampede protection is the expected trio."
+ },
+ {
+  "skillName": "GraphQL",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "What is the N+1 query problem in GraphQL and how do you solve it?",
+  "options": null,
+  "answerKey": "Each nested field resolves independently, so a list of authors each fetching books fires one query per author. DataLoader batches and caches loads within a request: collectors gather keys per tick, issue one IN query, distribute results. Also cap query depth/complexity to protect the backend.",
+  "keywords": [
+   "N+1|nested resolver",
+   "DataLoader|batch|cache",
+   "IN query|round trip",
+   "depth limit|complexity|cost"
+  ],
+  "explanation": "Batching with DataLoader plus depth/complexity limits is the standard answer."
+ },
+ {
+  "skillName": "Terraform",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "How does Terraform manage state and why is remote state with locking important for teams?",
+  "options": null,
+  "answerKey": "State maps config to real resources; plan compares them. Local state breaks teams - no sharing, conflict risk. Remote backend (S3+DynamoDB, Terraform Cloud) stores state centrally and locks during apply so two engineers can't corrupt infrastructure; state also holds secrets, so encryption and restricted access matter.",
+  "keywords": [
+   "state file|mapping",
+   "plan|apply|drift",
+   "remote backend|S3|Terraform Cloud",
+   "lock|concurrency",
+   "secret|encrypt|access"
+  ],
+  "explanation": "Centralized locked state prevents conflicting applies; treat state as sensitive."
+ },
+ {
+  "skillName": "Java",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Compare ArrayList and LinkedList. When is LinkedList actually the better choice?",
+  "options": null,
+  "answerKey": "ArrayList: contiguous array, O(1) random access, amortized O(1) append, great cache locality. LinkedList: O(n) access, O(1) insert/remove at ends via node pointers, extra memory per node. LinkedList wins mainly for queue-heavy usage at both ends - and even then ArrayDeque usually beats it.",
+  "keywords": [
+   "array|contiguous|random access O(1)",
+   "node|pointer|O(n) access",
+   "insert remove ends|deque",
+   "ArrayDeque|cache locality|rarely"
+  ],
+  "explanation": "Almost always ArrayList/ArrayDeque; honest answers admit LinkedList rarely wins."
+ },
+ {
+  "skillName": "Spring Boot",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "How do you test a Spring Boot application properly? Describe your layers.",
+  "options": null,
+  "answerKey": "Unit tests with Mockito for services in isolation; slice tests (@WebMvcTest, @DataJpaTest) for controllers and repositories; a thin layer of @SpringBootTest integration tests over real database via Testcontainers covering critical flows; contract tests for external APIs. Keep the expensive full-context tests small and meaningful.",
+  "keywords": [
+   "Mockito|unit test",
+   "@WebMvcTest|@DataJpaTest|slice",
+   "@SpringBootTest|integration",
+   "Testcontainers|real database",
+   "contract|pyramid"
+  ],
+  "explanation": "Test pyramid: many fast units, few slices, tiny but real integration layer."
+ },
+ {
+  "skillName": "Docker",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Explain Docker networking modes. How do containers talk to each other and to the host?",
+  "options": null,
+  "answerKey": "Default bridge networks let containers reach each other by name via embedded DNS; host mode shares the host stack for performance; none isolates fully. Publish ports (-p) DNATs host traffic into the container; user-defined bridges replace legacy link-based communication.",
+  "keywords": [
+   "bridge|default|DNS",
+   "service discovery|container name",
+   "host mode|network stack",
+   "port publishing|-p|DNAT",
+   "none|isolated"
+  ],
+  "explanation": "User-defined bridge with embedded DNS is the everyday answer."
+ },
+ {
+  "skillName": "AWS",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Walk me through what happens when a Lambda behind API Gateway receives a request that reads from DynamoDB.",
+  "options": null,
+  "answerKey": "API Gateway validates/authenticates (authorizer), invokes Lambda in a VPC or not with IAM role; cold start may add latency (provisioned concurrency mitigates); Lambda queries DynamoDB via SDK using role permissions, returns response; Gateway shapes status/headers. Considerations: payload limits, throttling, idempotency for retries.",
+  "keywords": [
+   "authoriz|IAM|token",
+   "invoke|cold start|provisioned concurrency",
+   "SDK|role|permission",
+   "payload limit|timeout|throttl",
+   "idempot|retry"
+  ],
+  "explanation": "Auth chain, cold starts, IAM execution role, limits and retry semantics."
+ },
+ {
+  "skillName": "Kafka",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "What is Kafka rebalancing, why does it hurt, and how do you minimize it?",
+  "options": null,
+  "answerKey": "Rebalancing redistributes partition assignments when consumers join/leave, pausing consumption group-wide. It hurts because in-flight work stalls and offsets may be redelivered. Minimize with static membership (group.instance.id), cooperative-sticky assignment, session/heartbeat tuning, and avoiding deployments that bounce many pods at once.",
+  "keywords": [
+   "partition assignment|redistribut",
+   "pause|stop-the-world|stall",
+   "static membership|group.instance.id",
+   "cooperative|incremental",
+   "heartbeat|session timeout|rolling deploy"
+  ],
+  "explanation": "Static membership + cooperative assignor + careful rollouts keep pauses short."
+ },
+ {
+  "skillName": "React",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "How do you handle forms in React at scale - validation, dirty state and submission?",
+  "options": null,
+  "answerKey": "Controlled inputs driven by form state (or a lib like react-hook-form for perf via uncontrolled registration), schema validation shared with backend (zod/yup), track touched/dirty/errors per field, disable submit on invalid/isSubmitting, and handle optimistic vs server-confirmed updates explicitly.",
+  "keywords": [
+   "controlled|uncontrolled|react-hook-form",
+   "schema valid|zod|yup",
+   "touched|dirty|error",
+   "isSubmitting|disable",
+   "optimistic|server confirm"
+  ],
+  "explanation": "Form library + shared schema + explicit submit states scales past ad-hoc useState."
+ },
+ {
+  "skillName": "PostgreSQL",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "Explain connection pooling in PostgreSQL. Why is a pool like PgBouncer common in production?",
+  "options": null,
+  "answerKey": "Each Postgres connection is a full OS process costing memory and context switching, so thousands of direct connections collapse performance. PgBouncer multiplexes many client connections onto few server connections in transaction pooling mode; caveats include broken session-level features like prepared statements and advisory locks.",
+  "keywords": [
+   "process per connection|expensive",
+   "PgBouncer|pool",
+   "transaction mode|multiplex",
+   "prepared statement|session state|caveat"
+  ],
+  "explanation": "Process-per-connection cost plus transaction-mode trade-offs is the full answer."
+ },
+ {
+  "skillName": "Kubernetes",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "What are resource requests and limits in Kubernetes, and how do they affect scheduling and QoS?",
+  "options": null,
+  "answerKey": "Requests reserve capacity and drive bin-packing scheduling; limits cap runtime usage. Guaranteed QoS needs requests equal to limits; Burstable when they differ; BestEffort with neither. CPU over-limit gets throttled, memory over-limit gets OOM-killed, so set limits from real profiling data.",
+  "keywords": [
+   "request|scheduling|bin-pack",
+   "limit|cap|throttle|OOMKill",
+   "Guaranteed|Burstable|BestEffort",
+   "profil|measure"
+  ],
+  "explanation": "Scheduling uses requests, enforcement uses limits; class drives eviction order."
+ },
+ {
+  "skillName": "TypeScript",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "How do generics make library code reusable? Give an example you would write.",
+  "options": null,
+  "answerKey": "Generics parameterize types while keeping inference: a function like fetchJson<T>(url): Promise<T> returns typed data without casts at call sites. Constraints (T extends { id: string }) express requirements, and generic utilities like Partial<T> or Pick<T,K> transform shapes safely.",
+  "keywords": [
+   "inference|call site",
+   "constraint|extends",
+   "no cast|type safe",
+   "Partial|Pick|utility type"
+  ],
+  "explanation": "Inference plus constraints = reusable without sacrificing checking."
+ },
+ {
+  "skillName": "TypeScript",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "Explain discriminated unions and why they beat optional-field models.",
+  "options": null,
+  "answerKey": "A discriminated union tags each state ({kind:'loading'} | {kind:'ok',data:T} | {kind:'error',err}). Switching on the tag narrows fields precisely, making illegal states unrepresentable - no checking data on error branch. Optional fields let loading states carry undefined data and invite null-checks everywhere.",
+  "keywords": [
+   "discriminant|tag|kind",
+   "narrow|switch",
+   "illegal state|unrepresentable",
+   "optional field|undefined"
+  ],
+  "explanation": "Tagged unions encode state machines; optionals blur them."
+ },
+ {
+  "skillName": "JavaScript",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Compare var, let and const - scoping, hoisting and when you use each.",
+  "options": null,
+  "answerKey": "var is function-scoped and hoisted as undefined; let/const are block-scoped in the temporal dead zone until declaration. const binds the reference immutably but object contents stay mutable. Default to const, use let only for reassigned values, never var.",
+  "keywords": [
+   "function scope|block scope",
+   "hoist|temporal dead zone",
+   "const reference|mutable object",
+   "default const"
+  ],
+  "explanation": "Scope rules plus TDZ; const still allows mutation of contents."
+ },
+ {
+  "skillName": "JavaScript",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "What is a closure and where have you used one deliberately?",
+  "options": null,
+  "answerKey": "A closure captures variables from its defining scope even after that scope exits. Deliberate uses: module privacy via factory functions, memoization caches, event handlers bound to specific state, once/debounce utilities. Watch for accidental capture in loops before let existed.",
+  "keywords": [
+   "captur|enclos|lexical scope",
+   "factory|private|module pattern",
+   "memoiz|cache|debounce|once",
+   "loop capture|let fix"
+  ],
+  "explanation": "Captured scope persistence plus practical patterns like memoization."
+ },
+ {
+  "skillName": "Node.js",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "How do streams help with large files in Node? Compare piping vs async iteration.",
+  "options": null,
+  "answerKey": "Streams process chunk-by-chunk keeping memory flat instead of buffering whole files. pipe() handles backpressure historically; pipeline() adds error propagation and cleanup; async iterators (for await...of) give readable control flow. Backpressure stops fast producers from drowning slow consumers.",
+  "keywords": [
+   "chunk|memory constant",
+   "backpressure",
+   "pipeline(|pipe error handling",
+   "for await|async iterator"
+  ],
+  "explanation": "Constant memory plus backpressure; prefer pipeline() for error safety."
+ },
+ {
+  "skillName": "Python",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "When would you choose a dataclass, a NamedTuple or a plain dict for structured data?",
+  "options": null,
+  "answerKey": "NamedTuple for lightweight immutable records with tuple compatibility; dataclass when you want mutability, defaults, methods and type hints with generated __init__/__repr__; dicts for truly dynamic schemas or serialization boundaries. Type safety and intent clarity increase left to right in reverse - pick the strictest that fits.",
+  "keywords": [
+   "immutable|NamedTuple",
+   "dataclass|defaults|methods",
+   "dynamic schema|dict|serializ",
+   "frozen|equality|repr"
+  ],
+  "explanation": "Immutability and behavior requirements decide among the three."
+ },
+ {
+  "skillName": "Go",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "What is a goroutine leak, how do you detect it, and how do you prevent it?",
+  "options": null,
+  "answerKey": "A goroutine blocked forever on a channel send/receive that nobody will satisfy leaks its stack. Detect with pprof goroutine profiles or runtime.NumGoroutine trends. Prevent with context cancellation propagated to all blocking operations, buffered channels sized honestly, select with ctx.Done() branches, and ownership discipline for who closes channels.",
+  "keywords": [
+   "blocked forever|send receive",
+   "pprof|NumGoroutine|detect",
+   "context cancel|ctx.Done",
+   "buffered channel|select",
+   "close|ownership"
+  ],
+  "explanation": "Blocked-on-channel forever; contexts and select guards are the prevention kit."
+ },
+ {
+  "skillName": "System Design",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Your service's database is the bottleneck under read-heavy load. Walk through your scaling options in order.",
+  "options": null,
+  "answerKey": "First cache hot reads (Redis/CDN) with sensible invalidation. Then add read replicas and route reads to them, accepting replication lag. Next denormalize or materialize expensive views. Vertical scaling buys time cheaply. Sharding is last resort - huge operational cost, so exhaust simpler options first and measure everything.",
+  "keywords": [
+   "cache|Redis|CDN",
+   "read replica|lag",
+   "denormaliz|materialized",
+   "vertical scale|bigger instance",
+   "shard|last resort|partition"
+  ],
+  "explanation": "Cache, replicate, denormalize, then shard - cheapest first, measure between steps."
+ },
+ {
+  "skillName": "DSA",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Given two sorted arrays, how would you find their intersection efficiently? Analyze your approach.",
+  "options": null,
+  "answerKey": "Two pointers advancing the smaller current element gives O(n+m) time and O(1) extra space skipping duplicates by comparing adjacent values. Alternative: hashset of smaller array in O(n+m) time but O(min(n,m)) space. Binary search each element of smaller array into larger works when sizes differ hugely: O(m log n).",
+  "keywords": [
+   "two pointer|O(n) linear",
+   "hashset|space tradeoff",
+   "binary search|size mismatch",
+   "duplicate skip|dedup"
+  ],
+  "explanation": "Know all three and when size asymmetry flips the best choice."
+ },
+ {
+  "skillName": "REST API",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "How do you handle long-running operations in a REST API that take minutes to complete?",
+  "options": null,
+  "answerKey": "Return 202 Accepted immediately with a status endpoint URL (or Location header); process asynchronously via queue. Client polls status or subscribes via webhook/SSE. Status reports progress and final result URI; results should be idempotent to retrieve and eventually expire.",
+  "keywords": [
+   "202 Accepted|async",
+   "status endpoint|Location|polling",
+   "queue|worker|background",
+   "progress|webhook|SSE|callback",
+   "idempotent result"
+  ],
+  "explanation": "202 + status resource + async worker; push updates when available."
+ },
+ {
+  "skillName": "GraphQL",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "GraphQL exposes a single endpoint - how does this affect caching compared to REST?",
+  "options": null,
+  "answerKey": "HTTP-level URL caching mostly dies since queries vary per request in POST bodies. Caching moves into layers: persisted query hashes enable CDN caching of GET queries, response-level normalization caches entities client-side (Apollo cache by id), and server-side DataLoader caching dedupes within requests. Plan explicit cache keys accordingly.",
+  "keywords": [
+   "POST body|URL cache lost",
+   "persisted query|APQ|GET",
+   "normalized cache|entity id|Apollo",
+   "DataLoader|request cache"
+  ],
+  "explanation": "Caching shifts from HTTP URLs to normalized entity stores and persisted queries."
+ },
+ {
+  "skillName": "Terraform",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "Someone modified infrastructure manually in the console. How does Terraform handle drift and what do you do?",
+  "options": null,
+  "answerKey": "terraform plan reveals drift by comparing real infrastructure to state. Decide: revert manual change by applying config, or accept reality by importing/updating state (refresh-only adjustments). Prevention: restrict console access, run plan in CI on schedules, alert on unexpected diffs, keep emergency changes going through code review after the fact.",
+  "keywords": [
+   "plan|drift detect",
+   "apply|revert|import|state update",
+   "CI scheduled plan|alert",
+   "console access|prevent|guardrail"
+  ],
+  "explanation": "Detect with plan, reconcile deliberately, prevent with pipelines and RBAC."
+ },
+ {
+  "skillName": "TypeScript",
+  "type": "INTERVIEW",
+  "difficulty": "EASY",
+  "prompt": "What advantage does TypeScript give over JavaScript in team projects?",
+  "options": null,
+  "answerKey": "Types act as executable documentation checked at compile time: refactoring is tool-assisted and safe, IDE autocomplete reflects real shapes, interfaces between modules are explicit contracts, and whole bug classes (undefined access, wrong argument order) die before runtime.",
+  "keywords": [
+   "compile time|static check",
+   "refactor|tooling safe",
+   "autocomplete|IDE",
+   "contract|interface",
+   "catch bugs early"
+  ],
+  "explanation": "Compile-time contracts plus editor tooling are the core value."
+ },
+ {
+  "skillName": "JavaScript",
+  "type": "INTERVIEW",
+  "difficulty": "EASY",
+  "prompt": "What does 'use strict' do and why might a file have it?",
+  "options": null,
+  "answerKey": "It opts the file/function into stricter parsing: accidental globals throw, silent failures become errors, this is undefined in bare functions, and reserved words are protected. ES modules are always strict so modern code rarely writes it explicitly anymore.",
+  "keywords": [
+   "accidental global|throw",
+   "silent error|exception",
+   "this binding|undefined",
+   "ESM|module always strict"
+  ],
+  "explanation": "Opt-in strictness; moot in ES modules but matters for legacy scripts."
+ },
+ {
+  "skillName": "Node.js",
+  "type": "INTERVIEW",
+  "difficulty": "EASY",
+  "prompt": "What is npm's package-lock.json for and why should it be committed?",
+  "options": null,
+  "answerKey": "It pins the exact resolved version and integrity hash of every dependency in the tree, so npm install reproduces identical installs across machines and CI. Committing it prevents works-on-my-machine drift and supply-chain surprises from floating versions.",
+  "keywords": [
+   "exact version|pin|resolved",
+   "reproducib|consistent install|integrity hash",
+   "commit|CI|team",
+   "transitive dependency|tree"
+  ],
+  "explanation": "Deterministic installs across environments via pinned resolution graph."
+ },
+ {
+  "skillName": "Python",
+  "type": "INTERVIEW",
+  "difficulty": "EASY",
+  "prompt": "Explain list comprehension vs generator expression - memory and usage differences.",
+  "options": null,
+  "answerKey": "[x*2 for x in items] builds the entire list in memory immediately; (x*2 for x in items) creates a lazy generator producing values on demand - constant memory, single pass, ideal for pipelines or huge datasets. Generators cannot be reused or indexed once exhausted.",
+  "keywords": [
+   "eager|entire list|memory",
+   "lazy|on demand|generator",
+   "single pass|exhaust|reuse",
+   "pipeline|huge dataset"
+  ],
+  "explanation": "Eager list vs lazy stream; generators save memory but are one-shot."
+ },
+ {
+  "skillName": "Go",
+  "type": "INTERVIEW",
+  "difficulty": "EASY",
+  "prompt": "Why does Go force you to handle every returned error explicitly, and what does if err != nil buy you?",
+  "options": null,
+  "answerKey": "Errors are values returned alongside results, making failure paths visible in control flow instead of hidden exceptions. It forces conscious handling at call sites, keeps stack traces shallow, encourages wrapping errors with context (%w), at the cost of verbosity.",
+  "keywords": [
+   "error as value|return",
+   "visible control flow|explicit",
+   "wrap|%w|context",
+   "verbose|boilerplate tradeoff"
+  ],
+  "explanation": "Explicit error paths vs exceptions - visibility over brevity."
+ },
+ {
+  "skillName": "Redis",
+  "type": "INTERVIEW",
+  "difficulty": "MEDIUM",
+  "prompt": "What data structures does Redis offer besides strings, and what would you use each for?",
+  "options": null,
+  "answerKey": "Hashes for object-like records, Lists for queues/timelines, Sets for membership and uniqueness, Sorted Sets for leaderboards/ranges by score, Streams for append-only event logs with consumer groups, HyperLogLog for approximate cardinality, Bitmaps for boolean flags. Picking correctly avoids application-side logic.",
+  "keywords": [
+   "hash|object field",
+   "list|queue|timeline",
+   "set|unique member",
+   "sorted set|leaderboard|score range",
+   "stream|consumer group",
+   "HyperLogLog|cardinality"
+  ],
+  "explanation": "Right structure moves work from app code to optimized native commands."
+ },
+ {
+  "skillName": "REST API",
+  "type": "INTERVIEW",
+  "difficulty": "EASY",
+  "prompt": "Which HTTP method would you use for an operation that is not quite CREATE or UPDATE - like toggling a feature flag - and why?",
+  "options": null,
+  "answerKey": "POST or PATCH on a sub-resource (/features/email-flag/enabled) with body {\"enabled\":true}, since RPC-style verbs on resources stay RESTful. Avoid GET for anything with side effects; document idempotency - toggle-to-value via PATCH is idempotent, plain toggle POST is not.",
+  "keywords": [
+   "sub-resource|verb on resource",
+   "PATCH|PUT|POST choice",
+   "idempoten|toggle semantics",
+   "GET no side effect"
+  ],
+  "explanation": "Model the flag state as a resource; PATCH to a value keeps idempotency."
+ },
+ {
+  "skillName": "Redis",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "How does Redis achieve high availability and failover? Explain replication plus Sentinel versus Cluster mode.",
+  "options": null,
+  "answerKey": "Replication gives read replicas of a primary. Sentinel adds monitoring and automated primary promotion with client redirection on failure - simpler, single dataset. Redis Cluster shards data across 16384 hash slots on multiple nodes, each with replicas, scaling writes and memory beyond one box at the cost of multi-key operation limits to same-slot keys.",
+  "keywords": [
+   "replica|replication",
+   "Sentinel|failover|promot",
+   "Cluster|hash slot|shard|16384",
+   "multi-key|same slot|limit"
+  ],
+  "explanation": "Sentinel = HA for one dataset; Cluster = sharding with built-in HA."
+ },
+ {
+  "skillName": "GraphQL",
+  "type": "INTERVIEW",
+  "difficulty": "HARD",
+  "prompt": "What is the N+1 query problem in GraphQL resolvers and how does DataLoader fix it?",
+  "options": null,
+  "answerKey": "A field resolver fetching authors per post fires one DB query per post - N+1. DataLoader batches all loads within a single event-loop tick into one request (batching) and memoizes repeated keys per request (caching). Alternatives: SQL join builders or writing specialized parent-level resolvers.",
+  "keywords": [
+   "N+1|per row|per post",
+   "DataLoader|batch|tick|request",
+   "memoiz|cache per request",
+   "join|parent resolver|lookahead"
+  ],
+  "explanation": "Batch-and-memoize per request turns N queries into 1."
+ },
+ {
+  "skillName": "Terraform",
+  "type": "INTERVIEW",
+  "difficulty": "EASY",
+  "prompt": "What does terraform plan actually do and why run it before apply?",
+  "options": null,
+  "answerKey": "Plan reads current real infrastructure, compares it against state files and your configuration, and prints the exact create/replace/destroy actions without changing anything. It is a dry-run safety review - catching unintended destroys or replacements before they happen, and it can be saved and applied for exact reproducibility.",
+  "keywords": [
+   "dry.run|no change|preview",
+   "state|current infra|compare",
+   "create destroy replace|diff",
+   "save|apply plan file"
+  ],
+  "explanation": "Read-only diff of desired vs actual state; review before mutation."
+ }
+]

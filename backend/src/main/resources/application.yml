@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: skillproof
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/skillproof}
+    username: ${DATABASE_USERNAME:skillproof}
+    password: ${DATABASE_PASSWORD:skillproof}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789-abcdefghijklmnopqrstuvwxyz}
+    access-token-minutes: 30
+    refresh-token-days: 14
+  scoring:
+    claim-weight: 0.10
+    knowledge-weight: 0.30
+    practical-weight: 0.30
+    activity-weight: 0.20
+    market-weight: 0.10
+    overclaim-knowledge-threshold: 40
+  decay:
+    default-memory-strength-days: 20.0
+    min-retention-flag: 60.0
+  review:
+    intervals:
+      below40: 1
+      s40to59: 2
+      s60to74: 4
+      s75to89: 7
+      s90plus: 14
+  github:
+    api-base: https://api.github.com
+    per-page: 100
+  ai:
+    provider: ${AI_PROVIDER:auto}
+    base-url: ${AI_BASE_URL:http://localhost:11434}
+    model: ${AI_MODEL:llama3.2}
+  seed:
+    demo-user: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.skillproof: INFO
