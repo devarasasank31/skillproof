@@ -14,6 +14,14 @@ export default function Dashboard() {
   if (q.isError) return <EmptyState message="Failed to load dashboard" hint={String((q.error as Error).message)} />
   const d = q.data!
 
+  // Server runs in UTC, so the greeting must be computed with the viewer's own clock.
+  const hour = new Date().getHours()
+  const greeting = hour < 5 ? 'Burning the midnight oil'
+    : hour < 12 ? 'Good morning'
+    : hour < 17 ? 'Good afternoon'
+    : hour < 21 ? 'Good evening'
+    : 'Late-night grind'
+
   function act(actionType: string, skillId?: number) {
     switch (actionType) {
       case 'REVIEW': return '/reviews'
@@ -27,7 +35,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">{d.greeting}</h1>
+        <h1 className="text-2xl font-bold">{greeting}</h1>
         <p className="text-sm text-slate-500">{d.date}</p>
       </div>
 
