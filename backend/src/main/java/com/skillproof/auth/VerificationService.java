@@ -36,6 +36,7 @@ public class VerificationService {
     private final ApplicationEventPublisher events;
     private final boolean mailEnabled;
     private final String mailFrom;
+    private final String brevoApiKey;
     private final String appUrl;
     private final SecureRandom random = new SecureRandom();
 
@@ -46,6 +47,7 @@ public class VerificationService {
                                ApplicationEventPublisher events,
                                @Value("${app.mail.enabled:false}") boolean mailEnabled,
                                @Value("${app.mail.from}") String mailFrom,
+                               @Value("${app.mail.brevo-api-key:}") String brevoApiKey,
                                @Value("${app.app-url:http://localhost:5173}") String appUrl) {
         this.tokens = tokens;
         this.users = users;
@@ -54,6 +56,7 @@ public class VerificationService {
         this.events = events;
         this.mailEnabled = mailEnabled;
         this.mailFrom = mailFrom;
+        this.brevoApiKey = brevoApiKey;
         this.appUrl = appUrl;
     }
 
@@ -83,13 +86,49 @@ public class VerificationService {
         if (user == null || user.isDeleted() || user.getEmailVerifiedAt() != null) return;
         long start = System.currentTimeMillis();
         try {
-            sendEmail(e.email(), e.name(), e.link());
+            if (!brevoApiKey.isBlank()) {
+                // Render free tier blocks outbound SMTP (25/465/587); Brevo's HTTPS API works everywhere.
+                sendViaBrevo(e.email(), e.name(), e.link());
+            } else if (mailEnabled) {
+                sendEmail(e.email(), e.name(), e.link());
+            } else {
+                log.info("Mail disabled - verification link for {}: {}", e.email(), e.link());
+                return;
+            }
             log.info("Verification email sent to {} in {}ms", e.email(), System.currentTimeMillis() - start);
         } catch (Exception ex) {
             log.error("Failed to send verification email to {} (took {}ms): {}",
                     e.email(), System.currentTimeMillis() - start, ex.toString());
             log.info("Fallback verification link for {}: {}", e.email(), e.link());
         }
+    }
+
+    private void sendViaBrevo(String to, String name, String link) throws Exception {
+        String fromAddress = extractAddress(mailFrom);
+        var om = new com.fasterxml.jackson.databind.ObjectMapper();
+        var root = om.createObjectNode();
+        root.putObject("sender").put("name", "SkillProof").put("email", fromAddress);
+        root.putArray("to").addObject().put("email", to);
+        root.put("subject", "Verify your SkillProof account");
+        root.put("htmlContent", buildHtml(name, link));
+        var request = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create("https://api.brevo.com/v3/smtp/email"))
+                .header("api-key", brevoApiKey)
+                .header("content-type", "application/json")
+                .header("accept", "application/json")
+                .POST(java.net.http.HttpRequest.BodyPublishers.ofString(om.writeValueAsString(root)))
+                .build();
+        var response = java.net.http.HttpClient.newHttpClient()
+                .send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new IllegalStateException("Brevo API returned " + response.statusCode()
+                    + ": " + response.body());
+        }
+    }
+
+    private String extractAddress(String from) {
+        var m = java.util.regex.Pattern.compile("<([^>]+)>").matcher(from);
+        return m.find() ? m.group(1) : from.trim();
     }
 
     @Transactional
@@ -139,8 +178,13 @@ public class VerificationService {
         helper.setFrom(mailFrom);
         helper.setTo(to);
         helper.setSubject("Verify your SkillProof account");
+        helper.setText(buildHtml(name, link), true);
+        mailSender.send(message);
+    }
+
+    private String buildHtml(String name, String link) {
         String safeName = name == null ? "" : name.replace("<", "&lt;");
-        helper.setText("""
+        return """
                 <div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:auto;padding:24px">
                   <h2 style="color:#4f46e5;margin:0 0 8px">SkillProof</h2>
                   <p>Hi %s,</p>
@@ -153,7 +197,6 @@ public class VerificationService {
                   <p style="color:#64748b;font-size:13px">This link expires in %d hours.
                      If you didn't sign up, you can ignore this email.</p>
                 </div>
-                """.formatted(safeName, link, link, TOKEN_TTL_HOURS), true);
-        mailSender.send(message);
+                """.formatted(safeName, link, link, TOKEN_TTL_HOURS);
     }
 }

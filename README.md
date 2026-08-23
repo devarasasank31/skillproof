@@ -139,17 +139,21 @@ Architecture: `Vercel (SPA) → Render (Spring Boot in Docker) → Neon (Postgre
    env var `VITE_API_URL` = `https://<your-service>.onrender.com` → **Redeploy** (required!).
 
 4. **Email verification** — new accounts must confirm their address before signing in.
-   Enable sending via any SMTP provider, e.g. Gmail: create an
-   [App Password](https://myaccount.google.com/apppasswords) (2FA required), then set:
+   > ⚠️ Render's **free tier blocks outbound SMTP** (ports 25/465/587), so Gmail SMTP won't
+   > work there. Use Brevo's free HTTPS API instead (300 emails/day):
+   >
+   > 1. Sign up at [brevo.com](https://www.brevo.com) → **Senders** → add & verify your email
+   > 2. **SMTP & API → API keys** → generate a key
+   >
+   > Then set in Render:
 
    | Key | Value |
    |---|---|
-   | `MAIL_ENABLED` | `true` |
-   | `MAIL_USERNAME` | `you@gmail.com` |
-   | `MAIL_PASSWORD` | your 16-char app password |
-   | `MAIL_FROM` | `SkillProof <you@gmail.com>` |
+   | `BREVO_API_KEY` | your Brevo API key |
+   | `MAIL_FROM` | `SkillProof <the-email-you-verified@brevo.com>` |
 
    Without these the app still works — verification links are logged to the Render console instead of emailed.
+   (SMTP via `MAIL_ENABLED`/`MAIL_USERNAME`/`MAIL_PASSWORD` still works locally or on paid hosting.)
 5. Back in Render set `FRONTEND_URL` = `https://<your-app>.vercel.app` → redeploy (unlocks CORS).
 
 > Free-tier note: Render sleeps after ~15 min idle; first request takes ~60 s to wake.

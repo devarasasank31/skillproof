@@ -66,6 +66,7 @@ app:
   mail:
     enabled: ${MAIL_ENABLED:false}
     from: ${MAIL_FROM:SkillProof <no-reply@skillproof.dev>}
+    brevo-api-key: ${BREVO_API_KEY:}
   seed:
     demo-user: true
 
