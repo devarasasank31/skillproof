@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -77,6 +78,33 @@ public class VerificationService {
         events.publishEvent(new VerificationEmailEvent(
                 user.getId(), user.getEmail(), user.getName(),
                 appUrl + "/verify?token=" + rawToken));
+    }
+
+    /** Logs a clear verdict about mail config at startup so bad keys are obvious in Render logs. */
+    @EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
+    public void checkMailSetup() {
+        if (!brevoApiKey.isBlank()) {
+            try {
+                var req = java.net.http.HttpRequest.newBuilder()
+                        .uri(java.net.URI.create("https://api.brevo.com/v3/account"))
+                        .header("api-key", brevoApiKey)
+                        .GET().build();
+                var resp = java.net.http.HttpClient.newHttpClient()
+                        .send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
+                if (resp.statusCode() == 200) {
+                    log.info("MAIL CHECK: Brevo API key valid - verification emails will send over HTTPS");
+                } else {
+                    log.error("MAIL CHECK FAILED: Brevo returned {} {} - replace BREVO_API_KEY with a fresh key",
+                            resp.statusCode(), resp.body());
+                }
+            } catch (Exception e) {
+                log.error("MAIL CHECK ERROR: {}", e.toString());
+            }
+        } else if (mailEnabled) {
+            log.warn("MAIL CHECK: BREVO_API_KEY empty - using SMTP, which Render's free tier BLOCKS");
+        } else {
+            log.info("MAIL CHECK: email sending disabled - verification links go to the console log");
+        }
     }
 
     @Async
