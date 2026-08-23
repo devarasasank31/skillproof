@@ -13,8 +13,9 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Dictionary-driven skill extraction from free text. Covers all major developer
- * streams (backend, frontend, mobile, AI/ML, data, cloud, DevOps, testing).
+ * Dictionary-driven skill extraction from free text. Covers every common resume
+ * stream: engineering (backend, frontend, mobile, AI/ML, data, cloud, DevOps,
+ * testing, security) as well as design/UI-UX, marketing, business, finance and HR.
  */
 @Component
 public class SkillCatalog {
@@ -158,6 +159,118 @@ public class SkillCatalog {
         add("Testing", "Jest");
         add("Testing", "TestNG", "testng");
         add("Testing", "Postman");
+
+        // UI / UX / Design
+        add("Design", "UI Design", "ui design", "ui developer", "user interface design");
+        add("Design", "UX Design", "ux design", "ux developer", "user experience design", "user experience");
+        add("Design", "UI/UX", "ui/ux", "ui ux", "ui & ux");
+        add("Design", "Product Design", "product designer", "product designing");
+        add("Design", "Graphic Design", "graphic designer", "graphic designing");
+        add("Design", "Web Design", "web designer", "web designing");
+        add("Design", "Figma");
+        add("Design", "Adobe XD", "adobe xd", "adobexd");
+        add("Design", "Sketch", "sketch app");
+        add("Design", "InVision", "invision");
+        add("Design", "Framer", "framer motion", "framer");
+        add("Design", "Zeplin");
+        add("Design", "Axure");
+        add("Design", "Balsamiq");
+        add("Design", "Marvel App", "marvel app", "marvel prototyping");
+        add("Design", "Wireframing", "wireframe", "wireframes", "wireframing");
+        add("Design", "Prototyping", "prototype", "prototypes", "prototyping");
+        add("Design", "User Research", "user research", "user interviews", "user survey");
+        add("Design", "Usability Testing", "usability testing", "usability study");
+        add("Design", "Personas", "persona development", "user personas");
+        add("Design", "User Journeys", "user journey", "journey mapping", "customer journey");
+        add("Design", "Information Architecture", "information architecture");
+        add("Design", "Interaction Design", "interaction design", "interaction designer");
+        add("Design", "Design Systems", "design system", "design guidelines");
+        add("Design", "Typography", "typography");
+        add("Design", "Color Theory", "color theory", "colour theory");
+        add("Design", "Accessibility", "accessibility", "wcag", "a11y");
+        add("Design", "Responsive Design", "responsive design", "responsive web design");
+        add("Design", "Motion Design", "motion design", "motion graphics");
+        add("Design", "Adobe Photoshop", "photoshop", "adobe photoshop");
+        add("Design", "Adobe Illustrator", "illustrator", "adobe illustrator");
+        add("Design", "After Effects", "after effects", "adobe after effects");
+        add("Design", "Premiere Pro", "premiere pro", "adobe premiere");
+        add("Design", "Canva");
+        add("Design", "Blender", "blender 3d");
+        add("Design", "3D Modeling", "3d modeling", "3d modelling", "3ds max");
+        add("Design", "Adobe Creative Suite", "adobe creative suite", "creative cloud");
+
+        // Marketing / Content
+        add("Marketing", "Digital Marketing", "digital marketer", "digital marketing");
+        add("Marketing", "SEO", "seo", "search engine optimization");
+        add("Marketing", "SEM", "sem", "search engine marketing");
+        add("Marketing", "Google Ads", "google ads", "google adwords", "adwords");
+        add("Marketing", "Social Media Marketing", "social media marketing", "smm", "social media manager");
+        add("Marketing", "Content Marketing", "content marketing", "content strategist");
+        add("Marketing", "Copywriting", "copywriting", "copywriter");
+        add("Marketing", "Content Writing", "content writer", "content writing", "technical writing", "blogger");
+        add("Marketing", "Email Marketing", "email marketing", "mailchimp");
+        add("Marketing", "Google Analytics", "google analytics", "ga4");
+        add("Marketing", "HubSpot", "hubspot");
+        add("Marketing", "Brand Management", "brand management", "branding");
+        add("Marketing", "Market Research", "market research");
+        add("Marketing", "Campaign Management", "campaign management", "marketing campaigns");
+        add("Marketing", "Growth Marketing", "growth hacking", "growth marketing");
+
+        // Business / Management / Finance / HR
+        add("Business", "Project Management", "project management", "project manager", "pmp");
+        add("Business", "Agile", "agile methodology", "agile");
+        add("Business", "Scrum", "scrum master", "scrum");
+        add("Business", "Jira");
+        add("Business", "Confluence");
+        add("Business", "Product Management", "product manager", "product management");
+        add("Business", "Business Analysis", "business analyst", "business analysis");
+        add("Business", "Stakeholder Management", "stakeholder management");
+        add("Business", "Financial Analysis", "financial analysis", "financial analyst");
+        add("Business", "Accounting", "accountant", "accounting");
+        add("Business", "Microsoft Excel", "ms excel", "excel", "advanced excel");
+        add("Business", "Tally", "tally erp");
+        add("Business", "SAP", "sap erp", "sap mm", "sap fico");
+        add("Business", "Budgeting", "budgeting", "budget planning");
+        add("Business", "Forecasting", "forecasting", "financial modeling");
+        add("Business", "Risk Management", "risk management");
+        add("Business", "Salesforce", "salesforce crm", "salesforce");
+        add("Business", "CRM", "crm", "customer relationship management");
+        add("Business", "Sales", "sales executive", "b2b sales", "inside sales");
+        add("Business", "Lead Generation", "lead generation");
+        add("Business", "Negotiation", "negotiation");
+        add("Business", "Customer Success", "customer success", "client servicing");
+        add("Business", "Operations Management", "operations management", "operations");
+        add("Business", "Supply Chain", "supply chain", "logistics");
+        add("Business", "Six Sigma", "six sigma", "lean six sigma");
+        add("Business", "Recruitment", "recruitment", "technical recruiter");
+        add("Business", "Talent Acquisition", "talent acquisition");
+        add("Business", "Human Resources", "human resources", "hr manager", "hr");
+        add("Business", "Public Speaking", "public speaking");
+        add("Business", "Team Leadership", "team leadership", "team lead", "people management");
+
+        // Cybersecurity
+        add("Security", "Penetration Testing", "penetration testing", "pen testing", "vapt");
+        add("Security", "Ethical Hacking", "ethical hacking");
+        add("Security", "Network Security", "network security");
+        add("Security", "OWASP", "owasp");
+        add("Security", "Burp Suite", "burp suite");
+        add("Security", "Wireshark");
+        add("Security", "Cryptography", "cryptography", "encryption");
+        add("Security", "SIEM", "siem");
+        add("Security", "Information Security", "information security", "infosec");
+
+        // Other popular tools / domains
+        add("Tools", "WordPress", "wordpress");
+        add("Tools", "Shopify", "shopify");
+        add("Tools", "Unity", "unity 3d", "unity engine");
+        add("Business", "Unreal Engine", "unreal engine");
+        add("Tools", "MATLAB");
+        add("Tools", "AutoCAD", "autocad");
+        add("Tools", "SolidWorks", "solidworks");
+        add("Tools", "Miro");
+        add("Tools", "Notion");
+        add("Tools", "Slack");
+        add("Data", "Looker Studio", "looker studio", "data studio");
     }
 
     private final SkillRepository skills;
