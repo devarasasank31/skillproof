@@ -1,5 +1,7 @@
 package com.skillproof.challenge;
 
+import com.skillproof.ai.AiEvaluationService;
+import com.skillproof.common.RateLimiter;
 import com.skillproof.evidence.SkillEvidence;
 import com.skillproof.evidence.SkillEvidenceRepository;
 import com.skillproof.exception.ApiException;
@@ -25,16 +27,21 @@ public class ChallengeService {
     private final SkillRepository skills;
     private final SkillEvidenceRepository evidence;
     private final RecalculationService recalculation;
+    private final AiEvaluationService ai;
+    private final RateLimiter rateLimiter;
 
     public ChallengeService(ChallengeRepository challenges, ChallengeSubmissionRepository submissions,
                             UserSkillRepository userSkills, SkillRepository skills,
-                            SkillEvidenceRepository evidence, RecalculationService recalculation) {
+                            SkillEvidenceRepository evidence, RecalculationService recalculation,
+                            AiEvaluationService ai, RateLimiter rateLimiter) {
         this.challenges = challenges;
         this.submissions = submissions;
         this.userSkills = userSkills;
         this.skills = skills;
         this.evidence = evidence;
         this.recalculation = recalculation;
+        this.ai = ai;
+        this.rateLimiter = rateLimiter;
     }
 
     public List<PracticalChallenge> list(Long userId, String skill, String type) {
@@ -42,10 +49,47 @@ public class ChallengeService {
                 .map(us -> us.getSkill().getName())
                 .map(n -> n.toLowerCase(Locale.ROOT))
                 .collect(java.util.stream.Collectors.toSet());
-        return challenges.findAll().stream()
+        List<PracticalChallenge> result = challenges.findAll().stream()
                 .filter(c -> skill == null || c.getSkillName().equalsIgnoreCase(skill))
                 .filter(c -> type == null || c.getType().equalsIgnoreCase(type))
                 .filter(c -> mine.contains(c.getSkillName().toLowerCase(Locale.ROOT)))
+                .toList();
+
+        // Resume-first + BYOK: if the user has an API key and some of their skills have no
+        // ready-made challenge, generate tailored ones (persisted so grading/evidence work).
+        List<String> mySkills = userSkills.findByUserId(userId).stream()
+                .map(us -> us.getSkill().getName())
+                .distinct()
+                .toList();
+        for (String s : mySkills) {
+            if (!challenges.findBySkillNameIgnoreCase(s).isEmpty()) continue;
+            if (!rateLimiter.tryAcquire("aichal:" + userId, 12, java.time.Duration.ofHours(1).toMillis())) break;
+            var gen = ai.generateChallenge(userId, s);
+            if (gen == null) continue;
+            PracticalChallenge c = new PracticalChallenge();
+            c.setSlug("ai-" + s.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "-")
+                    + "-" + Long.toHexString(System.nanoTime()) );
+            c.setTitle(gen.title());
+            c.setSkillName(s);
+            c.setType(gen.type());
+            c.setDifficulty(gen.difficulty());
+            c.setPrompt(gen.prompt());
+            c.setRubric(gen.rubric());
+            c.setRequiredKeywords(String.join(",", gen.keywords()));
+            c.setEstMinutes(gen.estMinutes());
+            try {
+                challenges.save(c);
+            } catch (Exception ignored) {
+                continue; // slug collision or constraint issue - skip this round
+            }
+        }
+
+        // Re-run the same filter after possible insertions so new challenges show up immediately.
+        Set<String> finalMine = mine;
+        return challenges.findAll().stream()
+                .filter(c -> skill == null || c.getSkillName().equalsIgnoreCase(skill))
+                .filter(c -> type == null || c.getType().equalsIgnoreCase(type))
+                .filter(c -> finalMine.contains(c.getSkillName().toLowerCase(Locale.ROOT)))
                 .toList();
     }
 

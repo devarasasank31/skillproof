@@ -20,7 +20,8 @@ export default function Challenges() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Challenges</h1>
       <p className="text-sm text-slate-500">
-        Practical tasks matched to YOUR resume skills — complete them to build real evidence.
+        Practical tasks matched to YOUR resume skills — with your own AI key connected, challenges for
+        skills without a ready-made task are generated just for you.
       </p>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">

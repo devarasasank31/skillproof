@@ -138,4 +138,62 @@ public class AiEvaluationService {
             return List.of();
         }
     }
+
+    public record GeneratedChallenge(String title, String type, String difficulty, String prompt,
+                                     String rubric, List<String> keywords, int estMinutes) {}
+
+    private static final String CHALLENGE_SYSTEM = """
+            You create practical challenges that prove whether someone genuinely has a skill.
+            Create ONE realistic challenge for the given skill. It must ask for a concrete deliverable
+            the candidate types out (a short design decision write-up, a mini case study, a campaign plan,
+            code snippet, SQL query, API design, debugging analysis...).
+            Respond with ONLY a JSON object in this exact schema, no markdown:
+            {"title":"short challenge title","type":"CONCEPT","difficulty":"MEDIUM","estMinutes":30,
+             "prompt":"the task brief, 80-150 words, concrete and specific",
+             "rubric":"what an excellent submission must include",
+             "keywords":["concept1","concept2","concept3","concept4"]}
+            Rules:
+            - "type" must be exactly one of: CONCEPT, CODING, DEBUGGING, SQL, REST_API, SYSTEM_DESIGN, ARCHITECTURE, INTERVIEW.
+              Pick CONCEPT or INTERVIEW for non-programming skills (design, marketing, business, finance...).
+            - "difficulty": EASY, MEDIUM or HARD. "estMinutes": integer between 10 and 90.
+            - "keywords" = 4-6 concrete concepts a strong submission would mention. The grader checks these.
+            """;
+
+    /** Generates one practical challenge tailored to the given skill (user's own AI key). */
+    public GeneratedChallenge generateChallenge(Long userId, String skillName) {
+        AiClient client = resolver.forUserId(userId).orElse(null);
+        if (client == null || !client.isAvailable()) return null;
+        try {
+            String raw = client.complete(CHALLENGE_SYSTEM,
+                    "Skill: " + skillName + "\nJSON object now:");
+            if (raw == null) return null;
+            Matcher m = JSON_BLOCK.matcher(raw);
+            if (!m.find()) return null;
+            JsonNode node = mapper.readTree(m.group());
+            String title = node.path("title").asText("").trim();
+            String prompt = node.path("prompt").asText("").trim();
+            if (title.isEmpty() || prompt.isEmpty()) return null;
+            java.util.Set<String> allowedTypes = java.util.Set.of(
+                    "CODING", "DEBUGGING", "SQL", "REST_API", "SYSTEM_DESIGN", "ARCHITECTURE", "CONCEPT", "INTERVIEW");
+            String type = node.path("type").asText("CONCEPT").trim().toUpperCase(java.util.Locale.ROOT);
+            if (!allowedTypes.contains(type)) type = "CONCEPT";
+            String diff = node.path("difficulty").asText("MEDIUM").trim().toUpperCase(java.util.Locale.ROOT);
+            if (!java.util.List.of("EASY", "MEDIUM", "HARD").contains(diff)) diff = "MEDIUM";
+            int mins = node.path("estMinutes").asInt(30);
+            if (mins < 10) mins = 10;
+            if (mins > 90) mins = 90;
+            List<String> kws = new ArrayList<>();
+            node.withArray("keywords").forEach(k -> {
+                String s = k.asText("").trim();
+                if (!s.isEmpty()) kws.add(s);
+            });
+            if (kws.isEmpty()) return null;
+            log.info("AI generated challenge '{}' for skill '{}'", title, skillName);
+            return new GeneratedChallenge(title, type, diff, prompt,
+                    node.path("rubric").asText(""), kws, mins);
+        } catch (Exception e) {
+            log.warn("AI challenge generation failed for '{}': {}", skillName, e.getMessage());
+            return null;
+        }
+    }
 }
