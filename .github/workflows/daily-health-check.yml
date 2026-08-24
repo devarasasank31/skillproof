@@ -1,0 +1,18 @@
+name: Daily Health Check
+
+on:
+  schedule:
+    - cron: '0 4 * * *' # every day 04:00 UTC (9:30 AM IST)
+  workflow_dispatch: {}
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run production health check
+        run: bash scripts/daily-health-check.sh
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::SkillProof production health check FAILED - some flows are broken. See log above."
