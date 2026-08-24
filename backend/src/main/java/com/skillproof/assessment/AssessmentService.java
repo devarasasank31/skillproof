@@ -85,6 +85,13 @@ public class AssessmentService {
             }
         }
 
+        // Still short (no AI key or AI came up empty): seed deterministic template
+        // questions so a full-length assessment is always possible for any skill.
+        if (pool.size() < count) {
+            content.generateTemplates(skill.getName());
+            pool = new ArrayList<>(content.pool(userId, skill.getName()));
+        }
+
         Collections.shuffle(pool, ThreadLocalRandom.current());
         for (QuestionBank.BankQuestion bq : pool) {
             if (created.size() >= count) break;

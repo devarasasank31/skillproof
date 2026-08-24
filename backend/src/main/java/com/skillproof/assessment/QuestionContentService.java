@@ -103,6 +103,8 @@ public class QuestionContentService {
      * Deterministic fallback for skills with no bank content and no AI key:
      * open-ended practice questions built from proven interview templates,
      * cached in the same table so they are created only once per skill.
+     * 15 distinct archetypes so a user can request a full 15-question assessment
+     * for ANY skill, even without an API key.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void generateTemplates(String skillName) {
@@ -116,6 +118,28 @@ public class QuestionContentService {
                 ("A teammate is new to %s. Explain the three most important things they should learn first, "
                         + "and why.").formatted(display),
                 ("Describe a time %s did not solve your problem easily. What went wrong and how did you adapt?")
+                        .formatted(display),
+                ("Compare %s with an alternative approach or tool. When would you choose each option?")
+                        .formatted(display),
+                ("How do you evaluate the quality of work done with %s? What separates great work from average?")
+                        .formatted(display),
+                ("Walk me through your personal workflow when you start a brand-new task using %s from scratch.")
+                        .formatted(display),
+                ("What are the real limits of %s? When would you refuse to use it, and what would you pick instead?")
+                        .formatted(display),
+                ("Something went badly wrong while using %s on live work. How do you diagnose the issue step by step?")
+                        .formatted(display),
+                ("Explain %s to a non-technical stakeholder. Which analogy would you use, and why does it work?")
+                        .formatted(display),
+                ("How has the way people use %s changed recently? How do you keep your own knowledge current?")
+                        .formatted(display),
+                ("A team lead asks whether to adopt %s for an important project. Walk me through exactly how "
+                        + "you would evaluate that decision.").formatted(display),
+                ("Which metrics would you track to prove the impact of your work with %s, and why those?")
+                        .formatted(display),
+                ("Give a concrete example where you combined %s with a completely different skill. "
+                        + "How did they complement each other?").formatted(display),
+                ("You must get a whole team productive with %s in one week. What is your training plan, day by day?")
                         .formatted(display));
         int saved = 0;
         for (String prompt : prompts) {
