@@ -83,12 +83,19 @@ public class InterviewController {
         for (Long skillId : req.skillIds()) {
             Skill s = skills.findById(skillId)
                     .orElseThrow(() -> ApiException.notFound("Skill " + skillId + " not found"));
-            List<QuestionBank.BankQuestion> pool =
-                    content.ensurePool(userId, s.getName(), true).stream()
-                            .sorted(Comparator.comparingInt(q ->
-                                    q.type().equalsIgnoreCase("INTERVIEW") ? 0 : 1))
-                            .limit(2)
-                            .toList();
+            List<QuestionBank.BankQuestion> pool;
+            try {
+                pool = content.ensurePool(userId, s.getName(), true).stream()
+                        .sorted(Comparator.comparingInt(q ->
+                                q.type().equalsIgnoreCase("INTERVIEW") ? 0 : 1))
+                        .limit(2)
+                        .toList();
+            } catch (Exception e) {
+                // One flaky skill (e.g. AI provider outage during first-time seeding)
+                // must not break the whole interview - skip it and keep going.
+                skipped.add(s.getName());
+                continue;
+            }
             if (pool.isEmpty()) {
                 skipped.add(s.getName());
                 continue;

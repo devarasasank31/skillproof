@@ -82,21 +82,38 @@ public class QuestionContentService {
     }
 
     /**
-     * Pool for a skill; when empty, generates content on demand so ANY skill can be
+     * Pool for a skill; when short/empty, generates content on demand so ANY skill can be
      * assessed/interviewed: AI generation when the user has a key, deterministic
      * template questions otherwise. Nobody is ever locked out of practising.
+     * Each generation step is individually guarded - an AI outage must never
+     * leave a skill without practice content.
      */
     public List<QuestionBank.BankQuestion> ensurePool(Long userId, String skillName,
                                                       boolean preferInterview) {
         List<QuestionBank.BankQuestion> p = pool(userId, skillName);
         if (!p.isEmpty()) return p;
         if (ai.available(userId)) {
-            generateAndCache(userId, skillName, preferInterview ? 3 : 4, preferInterview);
+            try {
+                generateAndCache(userId, skillName, preferInterview ? 3 : 4, preferInterview);
+            } catch (Exception e) {
+                log.warn("AI top-up failed for '{}', falling back to templates: {}", skillName, e.getMessage());
+            }
             p = pool(userId, skillName);
-            if (!p.isEmpty()) return p;
         }
-        generateTemplates(skillName);
-        return pool(userId, skillName);
+        if (p.isEmpty()) {
+            try {
+                generateTemplates(skillName);
+            } catch (Exception e) {
+                log.warn("Template seeding failed for '{}' ({}), retrying once", skillName, e.getMessage());
+                try {
+                    generateTemplates(skillName);
+                } catch (Exception e2) {
+                    log.error("Template seeding failed twice for '{}': {}", skillName, e2.getMessage());
+                }
+            }
+            p = pool(userId, skillName);
+        }
+        return p;
     }
 
     /**
