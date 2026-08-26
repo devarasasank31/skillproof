@@ -1,0 +1,2 @@
+# Force LF for shell scripts so bash on Linux runners never sees CRLF
+*.sh text eol=lf
