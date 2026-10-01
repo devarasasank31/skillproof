@@ -37,3 +37,11 @@ html.dark .input {
 html.dark .btn-secondary {
   @apply border-slate-700 hover:bg-slate-800;
 }
+
+.app-loader {
+  @apply flex min-h-screen items-center justify-center text-sm text-slate-500;
+}
+
+html.dark .app-loader {
+  @apply text-slate-400;
+}

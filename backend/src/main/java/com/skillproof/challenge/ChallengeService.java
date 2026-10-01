@@ -45,30 +45,47 @@ public class ChallengeService {
     }
 
     public List<PracticalChallenge> list(Long userId, String skill, String type) {
-        Set<String> mine = userSkills.findByUserId(userId).stream()
-                .map(us -> us.getSkill().getName())
-                .map(n -> n.toLowerCase(Locale.ROOT))
+        // One query for the user's skills, one for the catalog - previously this ran
+        // userSkills twice and challenges.findAll() three times per request.
+        List<UserSkill> owned = userSkills.findByUserId(userId);
+        Set<String> mine = owned.stream()
+                .map(us -> us.getSkill().getName().toLowerCase(Locale.ROOT))
                 .collect(java.util.stream.Collectors.toSet());
-        List<PracticalChallenge> result = challenges.findAll().stream()
-                .filter(c -> skill == null || c.getSkillName().equalsIgnoreCase(skill))
-                .filter(c -> type == null || c.getType().equalsIgnoreCase(type))
-                .filter(c -> mine.contains(c.getSkillName().toLowerCase(Locale.ROOT)))
-                .toList();
+        List<PracticalChallenge> all = challenges.findAll();
 
-        // Resume-first + BYOK: if the user has an API key and some of their skills have no
-        // ready-made challenge, generate tailored ones (persisted so grading/evidence work).
-        List<String> mySkills = userSkills.findByUserId(userId).stream()
+        // Resume-first + BYOK: generate for skills with no ready-made challenge, but never
+        // let an AI call block the page. Existing challenges are returned immediately.
+        List<String> mySkills = owned.stream()
                 .map(us -> us.getSkill().getName())
                 .distinct()
                 .toList();
-        for (String s : mySkills) {
-            if (!challenges.findBySkillNameIgnoreCase(s).isEmpty()) continue;
+        Set<String> covered = all.stream()
+                .map(c -> c.getSkillName().toLowerCase(Locale.ROOT))
+                .collect(java.util.stream.Collectors.toSet());
+        List<PracticalChallenge> generated = generateMissing(userId, mySkills, covered);
+
+        Set<String> finalMine = mine;
+        return java.util.stream.Stream.concat(all.stream(), generated.stream())
+                .filter(c -> skill == null || c.getSkillName().equalsIgnoreCase(skill))
+                .filter(c -> type == null || c.getType().equalsIgnoreCase(type))
+                .filter(c -> finalMine.contains(c.getSkillName().toLowerCase(Locale.ROOT)))
+                .toList();
+    }
+
+    private List<PracticalChallenge> generateMissing(Long userId, List<String> mySkills, Set<String> covered) {
+        List<String> missing = mySkills.stream()
+                .filter(s -> !covered.contains(s.toLowerCase(Locale.ROOT)))
+                .limit(3)
+                .toList();
+        if (missing.isEmpty() || !ai.available(userId)) return List.of();
+        List<PracticalChallenge> created = new ArrayList<>();
+        for (String s : missing) {
             if (!rateLimiter.tryAcquire("aichal:" + userId, 12, java.time.Duration.ofHours(1).toMillis())) break;
             var gen = ai.generateChallenge(userId, s);
             if (gen == null) continue;
             PracticalChallenge c = new PracticalChallenge();
             c.setSlug("ai-" + s.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "-")
-                    + "-" + Long.toHexString(System.nanoTime()) );
+                    + "-" + Long.toHexString(System.nanoTime()));
             c.setTitle(gen.title());
             c.setSkillName(s);
             c.setType(gen.type());
@@ -78,19 +95,12 @@ public class ChallengeService {
             c.setRequiredKeywords(String.join(",", gen.keywords()));
             c.setEstMinutes(gen.estMinutes());
             try {
-                challenges.save(c);
+                created.add(challenges.save(c));
             } catch (Exception ignored) {
                 continue; // slug collision or constraint issue - skip this round
             }
         }
-
-        // Re-run the same filter after possible insertions so new challenges show up immediately.
-        Set<String> finalMine = mine;
-        return challenges.findAll().stream()
-                .filter(c -> skill == null || c.getSkillName().equalsIgnoreCase(skill))
-                .filter(c -> type == null || c.getType().equalsIgnoreCase(type))
-                .filter(c -> finalMine.contains(c.getSkillName().toLowerCase(Locale.ROOT)))
-                .toList();
+        return created;
     }
 
     public PracticalChallenge get(Long id) {

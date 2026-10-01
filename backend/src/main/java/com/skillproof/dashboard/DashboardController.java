@@ -16,6 +16,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 public class DashboardController {
@@ -50,10 +52,15 @@ public class DashboardController {
         this.recalculation = recalculation;
     }
 
-    @GetMapping("/api/dashboard")
+@GetMapping("/api/dashboard")
     public DashboardResponse dashboard(@CurrentUserId Long userId) {
-        recalculation.recalculateUser(userId);
+        recalculation.recalculateUserIfStale(userId);
         List<SkillService.SkillRow> all = skills.listForUser(userId);
+
+        // One query for every snapshot instead of one query per at-risk skill.
+        Map<Long, List<com.skillproof.skill.SkillScore>> snapshotsBySkill =
+                snapshots.findAllForUser(userId).stream()
+                        .collect(Collectors.groupingBy(s -> s.getUserSkill().getSkill().getId()));
 
         int readiness = all.isEmpty() ? 0
                 : (int) Math.round(all.stream().mapToInt(SkillService.SkillRow::confidence).average().orElse(0));
@@ -64,7 +71,8 @@ public class DashboardController {
                 .filter(r -> r.state().equals("OVERCLAIMED") || r.state().equals("AT_RISK")
                         || r.state().equals("STALE") || r.state().equals("WEAK"))
                 .limit(6)
-                .map(r -> new TrendSkill(r.id(), r.name(), r.confidence(), r.state(), trendFor(userId, r)))
+                .map(r -> new TrendSkill(r.id(), r.name(), r.confidence(), r.state(),
+                        trendFor(snapshotsBySkill.get(r.skillId()))))
                 .toList();
 
         List<Recommendation> open = recs.findByUserIdAndStatusOrderByPriorityDesc(userId, "OPEN");
@@ -96,10 +104,8 @@ public class DashboardController {
                 top.getEffortMinutes(), skillName);
     }
 
-    private String trendFor(Long userId, SkillService.SkillRow row) {
-        var snaps = snapshots.findByUserSkill_User_IdAndUserSkill_Skill_IdOrderBySnapshotAtAsc(
-                userId, row.skillId());
-        if (snaps.size() < 2) return "flat";
+private String trendFor(List<com.skillproof.skill.SkillScore> snaps) {
+        if (snaps == null || snaps.size() < 2) return "flat";
         int last = snaps.get(snaps.size() - 1).getConfidence();
         int prev = snaps.get(Math.max(0, snaps.size() - 4)).getConfidence();
         if (last > prev) return "up";

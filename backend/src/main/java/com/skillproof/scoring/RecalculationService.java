@@ -18,9 +18,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class RecalculationService {
+
+    private static final long RECALC_THROTTLE_MILLIS = 30_000L;
+    private final Map<Long, Long> lastRecalculatedAt = new ConcurrentHashMap<>();
 
     private final ScoringEngine scoringEngine;
     private final SkillStateClassifier classifier;
@@ -105,21 +110,50 @@ public class RecalculationService {
             reviews.save(review);
         }
 
-        SkillScore snap = new SkillScore();
-        snap.setUserSkill(us);
-        snap.setConfidence(b.confidence());
-        snap.setKnowledge(knowledge);
-        snap.setPractical(practical);
-        snap.setActivity(activity);
-        snap.setMarket(market);
-        snap.setState(newState.name());
-        snapshots.save(snap);
+        // Only record a snapshot when the score actually moved, otherwise every dashboard
+        // view appends 10 identical rows and trend queries/table growth slow everything down.
+        var latest = snapshots.findFirstByUserSkill_IdOrderBySnapshotAtDesc(us.getId());
+        boolean changed = latest
+                .map(s -> s.getConfidence() != b.confidence() || s.getKnowledge() != knowledge
+                        || s.getPractical() != practical || s.getActivity() != activity
+                        || s.getMarket() != market)
+                .orElse(true);
+        if (changed) {
+            SkillScore snap = new SkillScore();
+            snap.setUserSkill(us);
+            snap.setConfidence(b.confidence());
+            snap.setKnowledge(knowledge);
+            snap.setPractical(practical);
+            snap.setActivity(activity);
+            snap.setMarket(market);
+            snap.setState(newState.name());
+            snapshots.save(snap);
+        }
     }
 
     @Transactional
     public void recalculateUser(Long userId) {
         for (UserSkill us : userSkills.findByUserId(userId)) {
             recalculateUserSkill(us);
+        }
+    }
+
+    /**
+     * Recalculates only if this user has not been recalculated very recently.
+     * Read endpoints (dashboard) call this so scrolling/refresh does not re-run the full
+     * scoring engine on every hit, while still keeping scores fresh after real activity.
+     */
+    public void recalculateUserIfStale(Long userId) {
+        long now = System.currentTimeMillis();
+        Long last = lastRecalculatedAt.get(userId);
+        if (last != null && now - last < RECALC_THROTTLE_MILLIS) return;
+        // Record before running so concurrent requests do not pile onto the same recalculation.
+        lastRecalculatedAt.put(userId, now);
+        try {
+            recalculateUser(userId);
+        } catch (RuntimeException e) {
+            lastRecalculatedAt.remove(userId);
+            throw e;
         }
     }
 

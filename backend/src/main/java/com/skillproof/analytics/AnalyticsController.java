@@ -3,13 +3,11 @@ package com.skillproof.analytics;
 import com.skillproof.scoring.SkillScoreRepository;
 import com.skillproof.security.CurrentUserId;
 import com.skillproof.skill.SkillService;
-import com.skillproof.skill.UserSkillRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 public class AnalyticsController {
@@ -20,14 +18,11 @@ public class AnalyticsController {
     public record AnalyticsResponse(List<CategoryRow> categories, List<SkillTrend> topSkillTrends,
                                     int readiness, int strongest, String weakestName, int weakestConfidence) {}
 
-    private final SkillService skills;
-    private final UserSkillRepository userSkills;
+private final SkillService skills;
     private final SkillScoreRepository snapshots;
 
-    public AnalyticsController(SkillService skills, UserSkillRepository userSkills,
-                               SkillScoreRepository snapshots) {
+    public AnalyticsController(SkillService skills, SkillScoreRepository snapshots) {
         this.skills = skills;
-        this.userSkills = userSkills;
         this.snapshots = snapshots;
     }
 
@@ -48,15 +43,17 @@ public class AnalyticsController {
                 .sorted((a, b) -> Integer.compare(b.avgConfidence(), a.avgConfidence()))
                 .toList();
 
+        // Load every snapshot for the user once instead of one query per skill.
+        Map<Long, List<TrendPoint>> pointsBySkill = new HashMap<>();
+        for (com.skillproof.skill.SkillScore s : snapshots.findAllForUser(userId)) {
+            pointsBySkill.computeIfAbsent(s.getUserSkill().getSkill().getId(),
+                            k -> new ArrayList<>())
+                    .add(new TrendPoint(s.getSnapshotAt(), s.getConfidence()));
+        }
+
         List<SkillTrend> trends = new ArrayList<>();
         for (SkillService.SkillRow r : rows.stream().limit(4).toList()) {
-            var usOpt = userSkills.findByUserIdAndSkillId(userId, r.skillId());
-            if (usOpt.isEmpty()) continue;
-            List<TrendPoint> pts = snapshots
-                    .findByUserSkill_User_IdAndUserSkill_Skill_IdOrderBySnapshotAtAsc(userId, r.skillId())
-                    .stream()
-                    .map(s -> new TrendPoint(s.getSnapshotAt(), s.getConfidence()))
-                    .collect(Collectors.toList());
+            List<TrendPoint> pts = new ArrayList<>(pointsBySkill.getOrDefault(r.skillId(), List.of()));
             if (pts.isEmpty()) {
                 pts.add(new TrendPoint(Instant.now(), r.confidence()));
             }

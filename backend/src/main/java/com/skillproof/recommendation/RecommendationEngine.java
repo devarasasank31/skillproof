@@ -14,6 +14,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class RecommendationEngine {
@@ -39,7 +41,7 @@ public class RecommendationEngine {
 
     @Transactional
     public List<RecommendationDto> generateFor(Long userId) {
-        recalculation.recalculateUser(userId);
+        recalculation.recalculateUserIfStale(userId);
         List<UserSkill> all = userSkills.findByUserIdOrderByConfidenceDesc(userId);
         List<Recommendation> out = new ArrayList<>();
         Instant now = Instant.now();
@@ -114,9 +116,12 @@ public class RecommendationEngine {
                 .toList();
     }
 
+    private final Map<Long, String> skillNameCache = new ConcurrentHashMap<>();
+
     private String skillName(Long skillId) {
         if (skillId == null) return null;
-        return skills.findById(skillId).map(com.skillproof.skill.Skill::getName).orElse(null);
+        return skillNameCache.computeIfAbsent(skillId,
+                id -> skills.findById(id).map(com.skillproof.skill.Skill::getName).orElse(null));
     }
 
     public List<Recommendation> open(Long userId) {

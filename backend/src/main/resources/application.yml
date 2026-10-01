@@ -5,10 +5,27 @@ spring:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/skillproof}
     username: ${DATABASE_USERNAME:skillproof}
     password: ${DATABASE_PASSWORD:skillproof}
+    hikari:
+      # Render free tier has little RAM; keep the pool small but warm enough to avoid churn.
+      maximum-pool-size: ${DB_POOL_SIZE:5}
+      minimum-idle: 1
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      pool-name: skillproof-pool
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 20
+          batch_versioned_data: true
+        order_inserts: true
+        order_updates: true
+        # Skip Hibernate's SQL statement logging overhead in production.
+        generate_statistics: false
   flyway:
     enabled: true
     locations: classpath:db/migration
