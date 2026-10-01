@@ -117,6 +117,31 @@ public class RecommendationEngine {
     }
 
     private final Map<Long, String> skillNameCache = new ConcurrentHashMap<>();
+    private static final long GENERATION_THROTTLE_MILLIS = 300_000L;
+    private final Map<Long, Long> lastGeneratedAt = new ConcurrentHashMap<>();
+
+    /**
+     * Generates recommendations only if they were not generated very recently. Without this the
+     * dashboard re-ran the whole engine (and wrote rows) on every single view.
+     */
+    public List<RecommendationDto> generateForIfStale(Long userId) {
+        long now = System.currentTimeMillis();
+        Long last = lastGeneratedAt.get(userId);
+        if (last == null || now - last >= GENERATION_THROTTLE_MILLIS) {
+            lastGeneratedAt.put(userId, now);
+            try {
+                generateFor(userId);
+            } catch (RuntimeException e) {
+                lastGeneratedAt.remove(userId);
+                throw e;
+            }
+        }
+        return open(userId).stream()
+                .map(r -> new RecommendationDto(r.getId(), r.getActionType(), r.getTitle(),
+                        r.getReason(), r.getPriority(), r.getEffortMinutes(), skillName(r.getSkillId()),
+                        r.getStatus()))
+                .toList();
+    }
 
     private String skillName(Long skillId) {
         if (skillId == null) return null;

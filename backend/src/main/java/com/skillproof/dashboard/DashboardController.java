@@ -74,9 +74,9 @@ public class DashboardController {
                         trendFor(snapshotsBySkill.get(r.skillId()))))
                 .toList();
 
-        List<Recommendation> open = recs.findByUserIdAndStatusOrderByPriorityDesc(userId, "OPEN");
+List<Recommendation> open = recs.findByUserIdAndStatusOrderByPriorityDesc(userId, "OPEN");
         if (open.isEmpty() && !all.isEmpty()) {
-            engine.generateFor(userId);
+            engine.generateForIfStale(userId);
             open = recs.findByUserIdAndStatusOrderByPriorityDesc(userId, "OPEN");
         }
         NbaDto nba = open.isEmpty() ? null : toNba(open.get(0));
