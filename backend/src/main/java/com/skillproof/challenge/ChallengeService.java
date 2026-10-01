@@ -17,9 +17,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 public class ChallengeService {
+
+    private static final ExecutorService challengeGenerator =
+            Executors.newSingleThreadExecutor(r -> {
+                Thread t = new Thread(r, "challenge-generator");
+                t.setDaemon(true);
+                return t;
+            });
 
     private final ChallengeRepository challenges;
     private final ChallengeSubmissionRepository submissions;
@@ -53,8 +62,8 @@ public class ChallengeService {
                 .collect(java.util.stream.Collectors.toSet());
         List<PracticalChallenge> all = challenges.findAll();
 
-        // Resume-first + BYOK: generate for skills with no ready-made challenge, but never
-        // let an AI call block the page. Existing challenges are returned immediately.
+        // Resume-first + BYOK: kick off generation for skills with no ready-made challenge,
+        // but never let an AI call block the response.
         List<String> mySkills = owned.stream()
                 .map(us -> us.getSkill().getName())
                 .distinct()
@@ -62,23 +71,32 @@ public class ChallengeService {
         Set<String> covered = all.stream()
                 .map(c -> c.getSkillName().toLowerCase(Locale.ROOT))
                 .collect(java.util.stream.Collectors.toSet());
-        List<PracticalChallenge> generated = generateMissing(userId, mySkills, covered);
+        generateMissingAsync(userId, mySkills, covered);
 
         Set<String> finalMine = mine;
-        return java.util.stream.Stream.concat(all.stream(), generated.stream())
+        return all.stream()
                 .filter(c -> skill == null || c.getSkillName().equalsIgnoreCase(skill))
                 .filter(c -> type == null || c.getType().equalsIgnoreCase(type))
                 .filter(c -> finalMine.contains(c.getSkillName().toLowerCase(Locale.ROOT)))
                 .toList();
     }
 
-    private List<PracticalChallenge> generateMissing(Long userId, List<String> mySkills, Set<String> covered) {
+    /**
+     * Tailored challenges are generated in the background so an AI round-trip never blocks the
+     * page. They are persisted, so they simply appear on a later load. Uses an explicit executor
+     * because a self-invoked @Async method would be ignored by Spring's proxy.
+     */
+    private void generateMissingAsync(Long userId, List<String> mySkills, Set<String> covered) {
         List<String> missing = mySkills.stream()
                 .filter(s -> !covered.contains(s.toLowerCase(Locale.ROOT)))
                 .limit(3)
                 .toList();
-        if (missing.isEmpty() || !ai.available(userId)) return List.of();
-        List<PracticalChallenge> created = new ArrayList<>();
+        if (missing.isEmpty() || !ai.available(userId)) return;
+        Set<String> snapshot = Set.copyOf(covered);
+        challengeGenerator.execute(() -> generateMissing(userId, missing, snapshot));
+    }
+
+    private void generateMissing(Long userId, List<String> missing, Set<String> covered) {
         for (String s : missing) {
             if (!rateLimiter.tryAcquire("aichal:" + userId, 12, java.time.Duration.ofHours(1).toMillis())) break;
             var gen = ai.generateChallenge(userId, s);
@@ -95,12 +113,11 @@ public class ChallengeService {
             c.setRequiredKeywords(String.join(",", gen.keywords()));
             c.setEstMinutes(gen.estMinutes());
             try {
-                created.add(challenges.save(c));
+                challenges.save(c);
             } catch (Exception ignored) {
-                continue; // slug collision or constraint issue - skip this round
+                // slug collision or constraint issue - skip this round
             }
         }
-        return created;
     }
 
     public PracticalChallenge get(Long id) {

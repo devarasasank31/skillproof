@@ -43,13 +43,10 @@ private final SkillService skills;
                 .sorted((a, b) -> Integer.compare(b.avgConfidence(), a.avgConfidence()))
                 .toList();
 
-        // Load every snapshot for the user once instead of one query per skill.
+        // Load recent snapshots for the user once instead of one query per skill.
         Map<Long, List<TrendPoint>> pointsBySkill = new HashMap<>();
-        for (com.skillproof.skill.SkillScore s : snapshots.findAllForUser(userId)) {
-            pointsBySkill.computeIfAbsent(s.getUserSkill().getSkill().getId(),
-                            k -> new ArrayList<>())
-                    .add(new TrendPoint(s.getSnapshotAt(), s.getConfidence()));
-        }
+        snapshots.recentBySkill(userId, 200).forEach((skillId, snaps) -> pointsBySkill.put(skillId,
+                snaps.stream().map(s -> new TrendPoint(s.getSnapshotAt(), s.getConfidence())).toList()));
 
         List<SkillTrend> trends = new ArrayList<>();
         for (SkillService.SkillRow r : rows.stream().limit(4).toList()) {

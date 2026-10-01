@@ -57,10 +57,9 @@ public class DashboardController {
         recalculation.recalculateUserIfStale(userId);
         List<SkillService.SkillRow> all = skills.listForUser(userId);
 
-        // One query for every snapshot instead of one query per at-risk skill.
+        // One capped query for recent snapshots instead of one query per at-risk skill.
         Map<Long, List<com.skillproof.skill.SkillScore>> snapshotsBySkill =
-                snapshots.findAllForUser(userId).stream()
-                        .collect(Collectors.groupingBy(s -> s.getUserSkill().getSkill().getId()));
+                snapshots.recentBySkill(userId, 200);
 
         int readiness = all.isEmpty() ? 0
                 : (int) Math.round(all.stream().mapToInt(SkillService.SkillRow::confidence).average().orElse(0));
