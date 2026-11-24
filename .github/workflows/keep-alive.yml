@@ -1,0 +1,30 @@
+# Keeps the Render free-tier backend awake so visitors never wait 2-5 minutes for a
+# cold start. Render sleeps an instance after ~15 minutes without traffic; this pings
+# it every 10 minutes (with retry) so it never sleeps.
+# Free GitHub repos get unlimited Actions minutes, so this costs nothing.
+name: Keep-alive
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  wake-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Wake Render backend
+        run: |
+          for i in 1 2 3; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 240 \
+              https://skillprooff.onrender.com/api/health || true)
+            echo "attempt $i -> HTTP ${code:-none}"
+            if [ "$code" = "200" ]; then
+              echo "Backend is awake."
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "Backend did not respond after 3 attempts"
+          exit 1
